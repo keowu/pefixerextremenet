@@ -1,9 +1,0 @@
-﻿  CNetPEFixer.cc
-C:\Users\Joao\source\repos\NETPEFixerExtreme\NETPEFixerExtreme\CNetPEFixer.cc(68,62): warning C4244: 'argumento': conversão de 'int64_t' para 'size_t', possível perda de dados
-C:\Users\Joao\source\repos\NETPEFixerExtreme\NETPEFixerExtreme\CNetPEFixer.cc(69,40): warning C4244: 'argumento': conversão de 'int64_t' para 'size_t', possível perda de dados
-C:\Users\Joao\source\repos\NETPEFixerExtreme\NETPEFixerExtreme\CNetPEFixer.cc(111,40): warning C4244: 'argumento': conversão de 'int64_t' para 'size_t', possível perda de dados
-C:\Users\Joao\source\repos\NETPEFixerExtreme\NETPEFixerExtreme\CNetPEFixer.cc(167,63): warning C4244: 'argumento': conversão de 'int64_t' para 'size_t', possível perda de dados
-C:\Users\Joao\source\repos\NETPEFixerExtreme\NETPEFixerExtreme\CNetPEFixer.cc(168,41): warning C4244: 'argumento': conversão de 'int64_t' para 'size_t', possível perda de dados
-C:\Users\Joao\source\repos\NETPEFixerExtreme\NETPEFixerExtreme\CNetPEFixer.cc(234,46): warning C4244: '=': conversão de 'std::streamoff' para 'int32_t', possível perda de dados
-C:\Users\Joao\source\repos\NETPEFixerExtreme\NETPEFixerExtreme\CNetPEFixer.cc(253,41): warning C4244: 'argumento': conversão de 'int64_t' para 'size_t', possível perda de dados
-  NETPEFixerExtreme.vcxproj -> C:\Users\Joao\source\repos\NETPEFixerExtreme\Debug\NETPEFixerExtreme.exe

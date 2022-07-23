@@ -1,9 +1,10 @@
 #include "CBinary.hh"
 
+
 /// <summary>
-///		Calcula o tamanho do arquivo
+///		Esse método privado calcula o tamanho do arquivo no contexto, a quantidade de bytes, sendo ele um binário ou plaintext
 /// </summary>
-auto CBinary::calculateFileSize( ) -> void {
+auto CBinary::calculateFileSize( void ) -> void {
 	this->fileSize = this->f.tellg( );
 	this->f.seekg( 0, std::ios::end );
 	this->fileSize = this->f.tellg( ) - this->fileSize;
@@ -23,7 +24,7 @@ auto CBinary::getFSz( ) -> std::int64_t {
 /// </summary>
 /// <returns>Retorna um objeto std::string contendo o path</returns>
 auto CBinary::getFilePath( ) -> std::basic_string< char, std::char_traits< char >, std::allocator< char > > {
-	return this->filePath;
+	return *this->filePath;
 }
 
 /// <summary>
@@ -31,10 +32,41 @@ auto CBinary::getFilePath( ) -> std::basic_string< char, std::char_traits< char 
 /// </summary>
 /// <param name="path">Path do arquivo para trabalhar</param>
 /// <param name="mode">Modo de abertura</param>
-CBinary::CBinary( std::basic_string<char> path, std::ios::openmode mode ) {
-	this->filePath = path;
-	this->f.open( path, mode );
-	this->calculateFileSize( );
+CBinary::CBinary( std::basic_string< char > path, std::ios::openmode mode, bool isPlaintext ) {
+
+	if ( !isPlaintext ) {
+
+		std::basic_string< wchar_t, std::char_traits< wchar_t >, std::allocator< wchar_t > > tmp( std::filesystem::temp_directory_path( ) );//C:\Users\usuário\AppData\Local\Temp
+		tmp.append( L"NETPEFIXERBINARYRUNTIME.tmp" );
+		this->filePath = new std::basic_string< char, std::char_traits< char >, std::allocator< char > >( tmp.begin( ), tmp.end( ) );
+		//Sempre true visto que o diretório de destino não requer permissões de administrador
+		( BOOL )CopyFile( std::basic_string< wchar_t, std::char_traits< wchar_t >, std::allocator< wchar_t > >( path.begin( ), path.end( ) ).c_str( ), tmp.c_str( ), FALSE ); //https://docs.microsoft.com/pt-br/windows/win32/api/winbase/nf-winbase-copyfile?redirectedfrom=MSDN
+		this->f.open( *this->filePath, mode );
+		this->calculateFileSize( );
+
+	}
+	else {
+		std::basic_string< wchar_t, std::char_traits< wchar_t >, std::allocator< wchar_t > > localPathWin( std::filesystem::current_path( ) );
+		this->filePath = new std::basic_string< char, std::char_traits< char >, std::allocator< char > >( localPathWin.begin( ), localPathWin.end( ) );
+		this->filePath->append( path.begin( ), path.end( ) ); //Quando plaintext refere-se a arquivos locais de trabalho de configuração ou temporários no mesmo diretório de trabalho!
+		this->f.open( *this->filePath, mode );
+		this->calculateFileSize( );
+
+	}
+
+}
+
+/// <summary>
+///		Esse método faz o parsing do stream utilizado, para um objeto nlohmann::json
+/// </summary>
+/// <returns>Retorna um objeto nlohmann::json completo</returns>
+auto CBinary::parseToJson( void ) -> nlohmann::json {
+	try {
+		return nlohmann::json::parse( this->f );
+	}
+	catch ( nlohmann::json::exception &ex ) {
+		std::operator<<( std::cerr, "Ocorreu um erro e por segurança o programa sera encerrado, erro ao parsear um arquivo json -> " ).operator<<( ex.what( ) ).operator<<( std::endl );
+	}
 }
 
 /// <summary>
@@ -102,4 +134,5 @@ auto CBinary::converterRelativeVirtualAddressToFileOffset( std::uint64_t superid
 /// </summary>
 CBinary::~CBinary( ) {
 	this->f.close( );
+	//PRECISO APAGAR O TEMPORARIO E COPIAR O BINÁRIO CORRIGIDO DE VOLTA!
 }

@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="The3rd">
+      <UniqueIdentifier>{e4cd593e-3fe2-4e65-9866-31426a93df7e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NETPEFixerExtreme.cc">
@@ -27,6 +30,9 @@
     <ClCompile Include="CNetPEFixer.cc">
       <Filter>Arquivos de Origem</Filter>
     </ClCompile>
+    <ClCompile Include="CTelemetry.cc">
+      <Filter>Arquivos de Origem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CMemSafety.hh">
@@ -38,5 +44,17 @@
     <ClInclude Include="CNetPEFixer.hh">
       <Filter>Arquivos de Cabeçalho</Filter>
     </ClInclude>
+    <ClInclude Include="CTelemetry.hh">
+      <Filter>Arquivos de Cabeçalho</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\json.hpp">
+      <Filter>The3rd</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\HTTPRequest.hpp">
+      <Filter>The3rd</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="netPE.conf" />
   </ItemGroup>
 </Project>

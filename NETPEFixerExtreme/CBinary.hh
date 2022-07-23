@@ -2,6 +2,8 @@
 #include <iostream>
 #include <fstream>
 #include <Windows.h>
+#include <filesystem>
+#include "The3rd/json.hpp"
 
 enum CBinaryType {
 	MZ_PE_FILE = 0x5A4D,
@@ -15,8 +17,14 @@ class CBinary
 private:
 	std::basic_fstream<char, std::char_traits<char>> f = std::basic_fstream<char>();
 	std::fpos<_Mbstatet> fileSize;
-	std::basic_string<char, std::char_traits<char>, std::allocator<char>> filePath;
-	void calculateFileSize();
+	std::basic_string<char, std::char_traits<char>, std::allocator<char>> *filePath;
+
+	/// <summary>
+	///		Esse método privado calcula o tamanho do arquivo no contexto, a quantidade de bytes, sendo ele um binário ou plaintext
+	/// </summary>
+	void calculateFileSize(
+		void
+	);
 
 public:
 
@@ -27,7 +35,16 @@ public:
 	/// <param name="mode">Modo de abertura</param>
 	CBinary(
 		std::basic_string<char> path,
-		std::ios::openmode mode
+		std::ios::openmode mode,
+		bool isPlaintext = false
+	);
+
+	/// <summary>
+	///		Esse método faz o parsing do stream utilizado, para um objeto nlohmann::json
+	/// </summary>
+	/// <returns>Retorna um objeto nlohmann::json completo</returns>
+	nlohmann::json parseToJson(
+		void
 	);
 	
 	/// <summary>

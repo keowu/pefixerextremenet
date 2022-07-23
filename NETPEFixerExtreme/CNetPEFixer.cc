@@ -1,37 +1,41 @@
 #include "CNetPEFixer.hh"
 
+/// <summary>
+///		Esse método corrige as funções e caracterísitcas básicas para o loader da IL
+/// </summary>
+/// <param name="ctx">Contexto do binário</param>
 auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 	
 	bool CorrigirDiretorioMetadata = true, corrigirBSJB = true; // EM DESENVOLVIMENTO OBVIAMENTE MUITO MAIS OPÇÕES VÃO ESTAR DISPONÍVEIS
 
-	std::operator<<(std::operator<<(std::cout, "Corrigindo arquivo PE Net -> "), ctx->getFilePath()).operator<<(std::endl);
+	std::operator<<( std::operator<<( std::cout, "Corrigindo arquivo PE Net -> " ), ctx->getFilePath( ) ).operator<<( std::endl );
 
-	ctx->mp(0);
+	ctx->mp( 0x00 );
 
-	auto* idh = reinterpret_cast< IMAGE_DOS_HEADER * >( CMemSafety::getMemory(sizeof(IMAGE_DOS_HEADER)) );
+	auto* idh = reinterpret_cast< IMAGE_DOS_HEADER * >( CMemSafety::getMemory( sizeof(IMAGE_DOS_HEADER) ) );
 
 	ctx->r( idh, sizeof(IMAGE_DOS_HEADER) );
 
 	if ( idh->e_magic != CBinaryType::MZ_PE_FILE )
 		return;
 
-	ctx->mp(idh->e_lfanew);
+	ctx->mp( idh->e_lfanew );
 
 	auto* inh = reinterpret_cast< IMAGE_NT_HEADERS * >( CMemSafety::getMemory(sizeof(IMAGE_NT_HEADERS)) );
 
-	ctx->r(inh, sizeof(IMAGE_NT_HEADERS));
+	ctx->r( inh, sizeof(IMAGE_NT_HEADERS) );
 
 	if ( inh->Signature != CBinaryType::NT_PE_FILE )
 		return;
 
-	ctx->mp( static_cast<long>( idh->e_lfanew ) + 4 + sizeof( IMAGE_FILE_HEADER ) + static_cast<int>( inh->FileHeader.SizeOfOptionalHeader ) );
+	ctx->mp( static_cast<long>( idh->e_lfanew ) + 4 + sizeof(IMAGE_FILE_HEADER) + static_cast<int>( inh->FileHeader.SizeOfOptionalHeader ) );
 
-	auto* sections = reinterpret_cast< IMAGE_SECTION_HEADER* >(CMemSafety::getMemory( sizeof(IMAGE_SECTION_HEADER ) * inh->FileHeader.NumberOfSections) );
+	auto* sections = reinterpret_cast< IMAGE_SECTION_HEADER* >(CMemSafety::getMemory( sizeof(IMAGE_SECTION_HEADER) * inh->FileHeader.NumberOfSections) );
 
-	ctx->r(sections, sizeof(IMAGE_SECTION_HEADER) * inh->FileHeader.NumberOfSections);
+	ctx->r( sections, sizeof(IMAGE_SECTION_HEADER) * inh->FileHeader.NumberOfSections );
 
 	for ( int i = 0; i < inh->FileHeader.NumberOfSections; i++ )
-		std::operator<<(std::cout, (*(sections + i)).Name).operator<<(std::endl);
+		std::operator<<( std::cout, ( *(sections + i)).Name ).operator<<( std::endl );
 
 	bool flag = true;
 
@@ -39,7 +43,7 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 	///		É o MetaDataDirectory zero ? se sim deu ruim e precisa ser consertado
 	/// </summary>
 	/// <param name="ctx">Definir flag para falso e ir corrigir</param>
-	if (inh->OptionalHeader.DataDirectory[14].VirtualAddress < 0)
+	if ( inh->OptionalHeader.DataDirectory[14].VirtualAddress < 0 )
 		flag = false;
 	else {
 		//Por preguiça de criar um segundo parâmetro e pelo meu colega de equipe não ficar quieto eu cirei a super idolhash: superidolhash = inh->OptionalHeader.DataDirectory[14].VirtualAddress << 8 | inh->FileHeader.NumberOfSections
@@ -60,12 +64,12 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 			int num3 = CBinary::converterRelativeVirtualAddressToFileOffset( 8192 << 8 | inh->FileHeader.NumberOfSections, sections );
 			if (num3 != 0) {
 
-				std::operator<<(std::cout, "O RVA do diretório MetaData do PE.net é inválido, vou fazer uma busca personalizada.").operator<<(std::endl);
+				std::operator<<( std::cout, "O RVA do diretório MetaData do PE.net é inválido, vou fazer uma busca personalizada." ).operator<<( std::endl );
 			    
 				//Vamos mapear todo arquivo em memória
 				ctx->mp( 0x00 );
-				auto* binaryBytesRaw = CMemSafety::getMemory( ctx->getFSz() );
-				ctx->r( binaryBytesRaw, ctx->getFSz() ); // vamos ler todo o arquivo e armazenar uma cópia de seus bytes de maneira segura
+				auto* binaryBytesRaw = CMemSafety::getMemory( ctx->getFSz( ) );
+				ctx->r( binaryBytesRaw, ctx->getFSz( ) ); // vamos ler todo o arquivo e armazenar uma cópia de seus bytes de maneira segura
 
 
 				for ( int i = 0; i < 30; i++ ) {
@@ -96,14 +100,14 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 
 				//Encerrando caso não seja possível encontrar o RVA diretório .NET Metadata
 				if ( num2 == 0 ) {
-					std::operator<<(std::cout, "Falha ao tentar encontrar o RVA para o diratório Metadata .NET")
-						.operator<<("\nVou encerrar a execução!");
+					std::operator<<( std::cout, "Falha ao tentar encontrar o RVA para o diratório Metadata .NET" )
+						.operator<<( "\nVou encerrar a execução!" );
 					return;
 				}
 
 				CMemSafety::safeMemMove( reinterpret_cast<void *>(num2), reinterpret_cast<void *>(*(binaryBytesRaw + idh->e_lfanew + 232)), sizeof(num2) ); //Copiando o valor do novo RVA
 				int fixedRVASizeParaMetadata = 72; // Por padrão o Windows assume que o diretório Metadata em binários .NET sempre vai ter o tamanho padrão de 72
-				CMemSafety::safeMemMove(reinterpret_cast<void *>(fixedRVASizeParaMetadata), reinterpret_cast<void*>(*(binaryBytesRaw + idh->e_lfanew + 232 + 4)), sizeof(int)); //Vamos gravar o novo valor no arquivo atual
+				CMemSafety::safeMemMove( reinterpret_cast<void *>( fixedRVASizeParaMetadata ), reinterpret_cast<void*>( *(binaryBytesRaw + idh->e_lfanew + 232 + 4) ), sizeof(int) ); //Vamos gravar o novo valor no arquivo atual
 				
 				//Limpando toda região mapeada e gravando arquivo
 				ctx->mp( 0x00 );
@@ -113,18 +117,18 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 				//Corrigindo o contexto atual que estamos trabalhando nesse arquivo
 				inh->OptionalHeader.DataDirectory[14].VirtualAddress = num2; // Corrigindo RVA já presente na struct em memória
 				inh->OptionalHeader.DataDirectory[14].Size = fixedRVASizeParaMetadata; // Definindo o tamanho do RVA padrão
-				std::operator<<(std::cout, "Consegui um novo valor para seu RVA do MetaDataDirectory, agora ele será de ")
-					.operator<<(std::hex).operator<<(num2).operator<<(std::endl);
+				std::operator<<( std::cout, "Consegui um novo valor para seu RVA do MetaDataDirectory, agora ele será de " )
+					.operator<<( std::hex ).operator<<( num2 ).operator<<( std::endl );
 				flag = true;
 			}
 		}
 
 		//continuar aqui com a lógica caso o diretório metadata esteja correto e não foi destruído pelo themida ou vmprotect
-		if (!flag)//Se mesmo após todas as válidações um RVA estiver equivocado e sua flag é hora de encerrar a correção e solicitar que o usuário encontre ou determine um valor
-			std::invoke([]() {
-			std::operator<<(std::cout, "RVA é inválido para continuar !").operator<<(std::endl);
-			exit(-1);
-			});
+		if ( !flag )//Se mesmo após todas as válidações um RVA estiver equivocado e sua flag é hora de encerrar a correção e solicitar que o usuário encontre ou determine um valor
+			std::invoke( []( void ) {
+			std::operator<<( std::cout, "RVA é inválido para continuar !" ).operator<<( std::endl );
+			exit( -1 );
+			} );
 		else {
 
 			bool flag3 = true;
@@ -139,15 +143,13 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 				flag3 = false;
 			else {
 				int num5 = CBinary::converterRelativeVirtualAddressToFileOffset( num4 << 8 | inh->FileHeader.NumberOfSections, sections );
-				if (num5 == 0) {
+				if ( num5 == 0 )
 					flag3 = false;
-				}
-				if (flag3) {
-
-					ctx->mp((long)num5);
+				if ( flag3 ) {
+					ctx->mp( (long)num5 );
 					std::int32_t num6 = 0;
-					ctx->r(&num6, sizeof(std::int32_t));
-					if (num6 != 1112167234) {
+					ctx->r( &num6, sizeof(std::int32_t) );
+					if ( num6 != 1112167234 ) {
 						flag3 = false;
 					}
 				}
@@ -156,7 +158,7 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 			//Os metadados .NET apontados pelo cabeçalho CLR/CLI sempre começam com a assinatura BSJB!
 			//Para quem quiser se aprofundar: https://www.codeproject.com/Articles/5841/Inside-the-NET-Application
 			//								  http://www.moserware.com/2007/11/mz-bsjb-and-joys-of-magic-constants-in.html
-			if (corrigirBSJB) {
+			if ( corrigirBSJB ) {
 
 				int valorPredizidoParaBSJB = 0;
 				if ( !flag3 ) {
@@ -164,9 +166,9 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 					//Vamos mapear todo arquivo em memória
 					ctx->mp( 0x00 );
 					auto* binaryBytesRaw = CMemSafety::getMemory( ctx->getFSz() );
-					ctx->r( binaryBytesRaw, ctx->getFSz() ); // vamos ler todo o arquivo e armazenar uma cópia de seus bytes de maneira segura
+					ctx->r( binaryBytesRaw, ctx->getFSz( ) ); // vamos ler todo o arquivo e armazenar uma cópia de seus bytes de maneira segura
 
-					for ( int j = 0; j < ctx->getFSz(); j++ )
+					for ( int j = 0; j < ctx->getFSz( ); j++ )
 					{
 						if ( *(binaryBytesRaw+ j) == 66 && *(binaryBytesRaw + j + 1) == 83 && *(binaryBytesRaw + j + 2) == 74 && *(binaryBytesRaw + j + 3) == 66 )
 						{
@@ -181,24 +183,24 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 						}
 					}
 
-					std::operator<<(std::cout, "Estou corrigindo o RVA do MetaData (BSJB) !");
+					std::operator<<( std::cout, "Estou corrigindo o RVA do MetaData (BSJB) !" );
 
 					if ( valorPredizidoParaBSJB <= 0 )
-						[]() {
-							std::operator<<(std::cout, "Ocorreu uma falha ao tentar determinar o valor correto para o RVA do metataData(BSJB) !");
-							exit(-1);
-						};
+						std::invoke( []( void ) {
+							std::operator<<( std::cout, "Ocorreu uma falha ao tentar determinar o valor correto para o RVA do metataData(BSJB) !" );
+							exit( -1 );
+						} );
 
-					std::operator<<(std::cout, "A partir de agora a ferramenta assumiu para (BSJB) o seguinte valor: ").operator<<(std::hex).operator<<(valorPredizidoParaBSJB);
+					std::operator<<( std::cout, "A partir de agora a ferramenta assumiu para (BSJB) o seguinte valor: " ).operator<<( std::hex ).operator<<( valorPredizidoParaBSJB );
 
 
 					//Vamos salvar no arquivo o novo valor do BSJB assumido pela ferramenta
-					CMemSafety::safeMemMove( &valorPredizidoParaBSJB, &*(binaryBytesRaw + (CBinary::converterRelativeVirtualAddressToFileOffset(inh->OptionalHeader.DataDirectory[14].VirtualAddress << 8 | inh->FileHeader.NumberOfSections, sections) + 8)), sizeof(valorPredizidoParaBSJB) );
+					CMemSafety::safeMemMove( &valorPredizidoParaBSJB, &*(binaryBytesRaw + ( CBinary::converterRelativeVirtualAddressToFileOffset( inh->OptionalHeader.DataDirectory[14].VirtualAddress << 8 | inh->FileHeader.NumberOfSections, sections ) + 8) ), sizeof(valorPredizidoParaBSJB) );
 					
 					//calculando tamanho da seção metadata!
 					int num8 = 0;
 					std::int64_t offsetParaMetadaSecao = CBinary::converterRelativeVirtualAddressToFileOffset( valorPredizidoParaBSJB << 8 | inh->FileHeader.NumberOfSections, sections );
-					ctx->mp(offsetParaMetadaSecao);
+					ctx->mp( offsetParaMetadaSecao );
 					
 
 					/*
@@ -226,7 +228,7 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 
 					//Calculando o tamanho do Metadata
 
-					auto* Metasections = reinterpret_cast<MetaDataHeaderSections*>( CMemSafety::getMemory( mh->NumberSections * sizeof(MetaDataHeaderSections) ) );
+					auto* Metasections = reinterpret_cast< MetaDataHeaderSections* >( CMemSafety::getMemory( mh->NumberSections * sizeof(MetaDataHeaderSections) ) );
 
 					for ( int i = 0; i < mh->NumberSections; i++ ) {
 
@@ -235,14 +237,14 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 						ctx->r( &(Metasections + i)->size, sizeof(std::int32_t) );
 
 						//LER CADA BYTE INDIVIDUALMENTE E CALCULAR O MODULO POR 4!
-						char* tmpArr = new char[32];
+						char* tmpArr = new char[ 32 ];
 						int ii = 0, ix = 0;
 						byte b;
 						while ( ctx->r( &b, 1 ), b != 0, ctx->mp( ctx->gp( ) + ix ), ix++ ) { // validar bytes lidos da MetaDataHeader
 							tmpArr[ ii++ ] = b;
 						}
 						ii++;
-						int quantidade = (ii % 4 != 0) ? (4 - ii % 4) : 0; // Determinando a quantidade lida bytes obtida da MetaDataSection
+						int quantidade = ( ii % 4 != 0 ) ? ( 4 - ii % 4 ) : 0; // Determinando a quantidade lida bytes obtida da MetaDataSection
 
 					}
 

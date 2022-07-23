@@ -3,10 +3,10 @@
 /// <summary>
 ///		Calcula o tamanho do arquivo
 /// </summary>
-auto CBinary::calculateFileSize() -> void {
-	this->fileSize = this->f.tellg();
+auto CBinary::calculateFileSize( ) -> void {
+	this->fileSize = this->f.tellg( );
 	this->f.seekg( 0, std::ios::end );
-	this->fileSize = this->f.tellg() - this->fileSize;
+	this->fileSize = this->f.tellg( ) - this->fileSize;
 	this->mp( 0x00 );
 }
 
@@ -14,7 +14,7 @@ auto CBinary::calculateFileSize() -> void {
 ///		Getter para obter o tamanho do arquivo
 /// </summary>
 /// <returns>retorna o tamanho do arquivo armazenado e calculado ao abrir um novo arquivo</returns>
-auto CBinary::getFSz() -> std::int64_t {
+auto CBinary::getFSz( ) -> std::int64_t {
 	return this->fileSize;
 }
 
@@ -22,7 +22,7 @@ auto CBinary::getFSz() -> std::int64_t {
 ///		Obtem o path do arquivo carregado na classe cbinary
 /// </summary>
 /// <returns>Retorna um objeto std::string contendo o path</returns>
-auto CBinary::getFilePath() -> std::basic_string<char, std::char_traits<char>, std::allocator<char>> {
+auto CBinary::getFilePath( ) -> std::basic_string< char, std::char_traits< char >, std::allocator< char > > {
 	return this->filePath;
 }
 
@@ -31,10 +31,10 @@ auto CBinary::getFilePath() -> std::basic_string<char, std::char_traits<char>, s
 /// </summary>
 /// <param name="path">Path do arquivo para trabalhar</param>
 /// <param name="mode">Modo de abertura</param>
-CBinary::CBinary(std::basic_string<char> path, std::ios::openmode mode) {
+CBinary::CBinary( std::basic_string<char> path, std::ios::openmode mode ) {
 	this->filePath = path;
 	this->f.open( path, mode );
-	this->calculateFileSize();
+	this->calculateFileSize( );
 }
 
 /// <summary>
@@ -60,7 +60,7 @@ auto CBinary::r( void* buff, std::size_t buffSz ) -> void {
 /// </summary>
 /// <param name="offset">offset do arquivo no qual deseja-se mover o ponteiro</param>
 auto CBinary::mp( std::int64_t offset ) -> void {
-	//According iso this function clear the eofbit flag!
+	//De acordo com a ISO do C++ essa função limpa a flag eofbit!
 	this->f.seekg( offset, std::ios::beg );
 }
 
@@ -68,7 +68,7 @@ auto CBinary::mp( std::int64_t offset ) -> void {
 ///		Esse método é responsável por retornar o ponteiro atual do binário seu offset
 /// </summary>
 /// <returns>offset atual do contexto do arquivo</returns>
-auto CBinary::gp() -> std::streamoff {
+auto CBinary::gp( ) -> std::streamoff {
 	return this->f.tellg();
 }
 
@@ -89,9 +89,9 @@ auto CBinary::converterRelativeVirtualAddressToFileOffset( std::uint64_t superid
 	// 0xDEADBEEF -> >> Agora vai em bora e me da oque eu quero ? yeah!
 	// Fonte: Meus Professores que me ensinaram fica mais fácil para guardar, hehe
 	for ( int i = 0; i < qtdSecoesPe; i++ )
-		if ( ctxs[i].VirtualAddress <= superidolhash && ctxs[i].VirtualAddress + ctxs[i].SizeOfRawData >= superidolhash )
-			return ctxs[i].PointerToRawData 
-				   + (superidolhash - ctxs[i].VirtualAddress); //Somatória da diferença entre o valor atual da superidolhash e o endereço virtual da seção
+		if ( ctxs[ i ].VirtualAddress <= superidolhash && ctxs[ i ].VirtualAddress + ctxs[ i ].SizeOfRawData >= superidolhash )
+			return ctxs[ i ].PointerToRawData 
+				   + ( superidolhash - ctxs[ i ].VirtualAddress ); //Somatória da diferença entre o valor atual da superidolhash e o endereço virtual da seção
 	
 	return 0; //O algoritmo original microsoft e themida não usam uma correção de offset de acordo quando não possui um offset válido
 
@@ -100,6 +100,6 @@ auto CBinary::converterRelativeVirtualAddressToFileOffset( std::uint64_t superid
 /// <summary>
 ///		Esse método fecha o contexto aberto do binário no qual está se trabalhando
 /// </summary>
-CBinary::~CBinary() {
-	this->f.close();
+CBinary::~CBinary( ) {
+	this->f.close( );
 }

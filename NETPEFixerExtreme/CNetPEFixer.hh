@@ -12,6 +12,7 @@ namespace CNetPEFixer
 	///		Fonte: https://ntcore.com/files/dotnetformat.htm#MetaSection
 	/// </summary>
 	struct MetaDataHeader {
+
 		std::int32_t sign;
 		std::int16_t MajorVersion;
 		std::int16_t MinorVersion;
@@ -20,15 +21,18 @@ namespace CNetPEFixer
 		std::int32_t versionMagicString;
 		std::int16_t flags;
 		std::int16_t NumberSections;
+
 	};
 
 	/// <summary>
 	///		MetaDataHeaderSections - .net Microsoft Corporation
 	/// </summary>
 	struct MetaDataHeaderSections {
+
 		std::int32_t headerctx;
 		std::int32_t offset;
 		std::int32_t size;
+
 	};
 
 	/// <summary>

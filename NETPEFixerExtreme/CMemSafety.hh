@@ -5,7 +5,9 @@
 ///		Flags de erros de memória
 /// </summary>
 enum CMemSafety_ERROR {
+
 	INVALID_MEMORY_ALLOCATION = 0
+
 };
 
 namespace CMemSafety

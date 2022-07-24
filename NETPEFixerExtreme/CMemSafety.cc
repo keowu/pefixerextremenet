@@ -6,9 +6,10 @@
 /// <param name="tamanho">Tamanho da alocação</param>
 /// <returns>Retorna um ponteiro para o início da locação reinterpretada como UCHAR*</returns>
 auto CMemSafety::getMemory( size_t tamanho ) -> unsigned char* {
-	return reinterpret_cast<unsigned char*>(malloc(
+
+	return reinterpret_cast< unsigned char* >( malloc(
 		tamanho
-	));
+	) );
 }
 
 /// <summary>
@@ -19,9 +20,12 @@ auto CMemSafety::getMemory( size_t tamanho ) -> unsigned char* {
 /// <param name="tamanho">Tamanho de memória alocada</param>
 /// <returns>True se foi possível mover corretamente e False como negação matemática da condição alterior</returns>
 auto CMemSafety::safeMemMove( void* destino, void* origem, size_t tamanho ) -> bool {
+
 	return memcpy_s(
+
 		destino, tamanho,
 		origem, tamanho
+
 	) == CMemSafety_ERROR::INVALID_MEMORY_ALLOCATION;
 }
 
@@ -30,7 +34,11 @@ auto CMemSafety::safeMemMove( void* destino, void* origem, size_t tamanho ) -> b
 /// </summary>
 /// <param name="mem">Referência de memória alocada</param>
 auto CMemSafety::memFlush( void* mem ) -> void {
-	free( mem );
+	free( 
+
+		mem
+
+	);
 }
 
 /// <summary>
@@ -41,8 +49,11 @@ auto CMemSafety::memFlush( void* mem ) -> void {
 /// <param name="tamanho">Tamanho de memória alocada</param>
 /// <returns>True se foi possível mover corretamente e False como negação matemática da condição alterior</returns>
 auto CMemSafety::safeMemMove( const char* origem, void* destino, size_t tamanho ) -> bool {
+
 	return memcpy_s(
+
 		destino, tamanho,
 		origem, tamanho
+
 	) == CMemSafety_ERROR::INVALID_MEMORY_ALLOCATION;
 }

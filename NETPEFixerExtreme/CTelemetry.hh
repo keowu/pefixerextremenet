@@ -9,7 +9,9 @@ namespace CTelemetry
 	/// </summary>
 	/// <param name="ctx">Contexto do binário</param>
 	/// <returns>Se a requisição foi aceita e o usuário concordou ou se ocorreu algum problema ao enviar a requisição</returns>
-	auto executeOperationSubmitBinary( CBinary* ctx ) -> bool;
+	auto executeOperationSubmitBinary(
+		CBinary* ctx
+	) -> bool;
 
 };
 

@@ -28,7 +28,7 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 	if ( inh->Signature != CBinaryType::NT_PE_FILE )
 		return;
 
-	ctx->mp( static_cast<long>( idh->e_lfanew ) + 4 + sizeof(IMAGE_FILE_HEADER) + static_cast<int>( inh->FileHeader.SizeOfOptionalHeader ) );
+	ctx->mp( static_cast< long >( idh->e_lfanew ) + 4 + sizeof(IMAGE_FILE_HEADER) + static_cast<int>( inh->FileHeader.SizeOfOptionalHeader ) );
 
 	auto* sections = reinterpret_cast< IMAGE_SECTION_HEADER* >(CMemSafety::getMemory( sizeof(IMAGE_SECTION_HEADER) * inh->FileHeader.NumberOfSections) );
 
@@ -126,8 +126,8 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 		//continuar aqui com a lógica caso o diretório metadata esteja correto e não foi destruído pelo themida ou vmprotect
 		if ( !flag )//Se mesmo após todas as válidações um RVA estiver equivocado e sua flag é hora de encerrar a correção e solicitar que o usuário encontre ou determine um valor
 			std::invoke( []( void ) {
-			std::operator<<( std::cout, "RVA é inválido para continuar !" ).operator<<( std::endl );
-			exit( -1 );
+				std::operator<<( std::cout, "RVA é inválido para continuar !" ).operator<<( std::endl );
+				exit( -1 );
 			} );
 		else {
 
@@ -239,14 +239,52 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 						//LER CADA BYTE INDIVIDUALMENTE E CALCULAR O MODULO POR 4!
 						char* tmpArr = new char[ 32 ];
 						int ii = 0, ix = 0;
-						byte b;
-						while ( ctx->r( &b, 1 ), b != 0, ctx->mp( ctx->gp( ) + ix ), ix++ ) { // validar bytes lidos da MetaDataHeader
+						byte b = 0;
+
+						//- VALIDAR A LÓGICA DE IMPLEMENTAÇÃO COM TESTE DE BINÁRIO'S EXEMPLO DA PASTA TESTES
+						while ( ctx->r( &b, 1 ), b != 0, ctx->mp( ctx->gp( ) + ix ), ix++ ) // validar bytes lidos da MetaDataHeader
 							tmpArr[ ii++ ] = b;
-						}
+						
 						ii++;
+
 						int quantidade = ( ii % 4 != 0 ) ? ( 4 - ii % 4 ) : 0; // Determinando a quantidade lida bytes obtida da MetaDataSection
+						
+						ctx->mp(ctx->gp( ) + quantidade);  // Devo mover a quantidade correta
+
+						if ( static_cast< int >(mh->NumberSections - 1) == i ) 
+							num8 = (Metasections + i)->offset + (Metasections + i)->size; // calculando o novo tamanho para a MetaData
+						
 
 					}
+
+
+					//TESTE DE CASO, BASEADO NOS BINÁRIOS QUE PRECISO EXECUTAR O AUTO TESTE!!!
+					if ( num8 == 0 ) 
+
+						std::invoke( [] ( void ) {
+
+							std::operator<<(
+								std::cerr, "Não foi possível obter o tamanho calculado correto para a Metadata, você deve predizer um valor ou encontra manualmente, recomendo usar o IDA ou PE Bear!\n"
+								);
+							exit(-1);
+
+						} );
+
+					
+					else 
+
+						std::operator<<( std::cout, "Definido um novo tamanho para a Metadata, agora será de " )
+										.operator<<( std::hex )
+										.operator<<( num8 )
+										.operator<<( std::endl );
+
+						// GRAVAR A LÓGICA NO BINÁRIO AQUI
+						// DEVE-SE GRAVAR O NOVO TAMANHO ARMAZENADO EM num8, corrigir o offset de memória para arquivo somendo a diferença de 8 com o tamanho total da quantidade de bytes, nesse caso + 4 e mais 4 de diferença do endereço
+						// FIM DA LÓGICA - NECESSITA CASO DE TESTE DE BINÁRIOS DEMOS !
+
+					
+					//AUTO TESTE IMPLEMENTAÇÃO
+
 
 					//Limpando toda região mapeada e gravando arquivo
 					CMemSafety::memFlush( Metasections );

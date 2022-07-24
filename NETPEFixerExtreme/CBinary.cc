@@ -65,7 +65,11 @@ auto CBinary::parseToJson( void ) -> nlohmann::json {
 		return nlohmann::json::parse( this->f );
 	}
 	catch ( nlohmann::json::exception &ex ) {
-		std::operator<<( std::cerr, "Ocorreu um erro e por segurança o programa sera encerrado, erro ao parsear um arquivo json -> " ).operator<<( ex.what( ) ).operator<<( std::endl );
+		std::operator<<( 
+						std::cerr,
+						"Ocorreu um erro e por segurança o programa sera encerrado, erro ao parsear um arquivo json -> "
+			).operator<<( ex.what( ) )
+			.operator<<( std::endl );
 	}
 }
 
@@ -75,7 +79,7 @@ auto CBinary::parseToJson( void ) -> nlohmann::json {
 /// <param name="buff">Buffer a ser escrito</param>
 /// <param name="buffSz">Tamanho do buffer a ser escrito</param>
 auto CBinary::w( void* buff, std::size_t buffSz ) -> void {
-	this->f.write( reinterpret_cast<char*>(buff), buffSz );
+	this->f.write( reinterpret_cast< char* >(buff), buffSz );
 }
 
 /// <summary>
@@ -84,7 +88,7 @@ auto CBinary::w( void* buff, std::size_t buffSz ) -> void {
 /// <param name="buff">Buffer a ser lido do binário</param>
 /// <param name="buffSz">Tamanho do buffer a ser lido do binário</param>
 auto CBinary::r( void* buff, std::size_t buffSz ) -> void {
-	this->f.read( reinterpret_cast<char*>(buff), buffSz );
+	this->f.read( reinterpret_cast< char* >(buff), buffSz );
 }
 
 /// <summary>
@@ -101,7 +105,7 @@ auto CBinary::mp( std::int64_t offset ) -> void {
 /// </summary>
 /// <returns>offset atual do contexto do arquivo</returns>
 auto CBinary::gp( ) -> std::streamoff {
-	return this->f.tellg();
+	return this->f.tellg( );
 }
 
 /// <summary>
@@ -112,7 +116,7 @@ auto CBinary::gp( ) -> std::streamoff {
 /// <returns>O offset do arquivo</returns>
 auto CBinary::converterRelativeVirtualAddressToFileOffset( std::uint64_t superidolhash, void* ctx ) -> int {
 
-	auto* ctxs = reinterpret_cast<IMAGE_SECTION_HEADER*>( ctx );
+	auto* ctxs = reinterpret_cast< IMAGE_SECTION_HEADER* >( ctx );
 	int qtdSecoesPe = superidolhash & 0xFF; // Me da, então TOMA!
 	superidolhash = superidolhash >> 8; // Agora vai em bora e me da oque eu quero ? yeah!
 	// Matemáticamente falando:

@@ -11,7 +11,7 @@ auto CTelemetry::executeOperationSubmitBinary( CBinary* ctx ) -> bool {
 
 	auto j = configf->parseToJson( );
 
-	if (std::basic_string< char, std::char_traits< char >, std::allocator< char > >( j[ "isEnabledSendTelemetry" ] ).find( "false" ) != std::basic_string< char, std::char_traits< char >, std::allocator< char > >::npos)
+	if ( std::basic_string< char, std::char_traits< char >, std::allocator< char > >( j[ "isEnabledSendTelemetry" ] ).find( "false" ) != std::basic_string< char, std::char_traits< char >, std::allocator< char > >::npos )
 		
 		return false;
 	

@@ -6,18 +6,20 @@
 #include "The3rd/json.hpp"
 
 enum CBinaryType {
+
 	MZ_PE_FILE = 0x5A4D,
 	NT_PE_FILE = 0x4550,
 	NT_PE_NET_THEMIDA_RVA_FOR_METADATA_DIR = 0x2000
+
 };
 
 class CBinary
 {
 
 private:
-	std::basic_fstream<char, std::char_traits<char>> f = std::basic_fstream<char>();
-	std::fpos<_Mbstatet> fileSize;
-	std::basic_string<char, std::char_traits<char>, std::allocator<char>> *filePath;
+	std::basic_fstream< char, std::char_traits< char > > f = std::basic_fstream< char >( );
+	std::fpos< _Mbstatet > fileSize;
+	std::basic_string< char, std::char_traits< char >, std::allocator< char > > *filePath;
 
 	/// <summary>
 	///		Esse método privado calcula o tamanho do arquivo no contexto, a quantidade de bytes, sendo ele um binário ou plaintext
@@ -34,7 +36,7 @@ public:
 	/// <param name="path">Path do arquivo para trabalhar</param>
 	/// <param name="mode">Modo de abertura</param>
 	CBinary(
-		std::basic_string<char> path,
+		std::basic_string< char > path,
 		std::ios::openmode mode,
 		bool isPlaintext = false
 	);
@@ -86,13 +88,17 @@ public:
 	/// <summary>
 	///		Calcula o tamanho do arquivo
 	/// </summary>
-	std::int64_t getFSz();
+	std::int64_t getFSz(
+		void
+	);
 
 	/// <summary>
 	///		Obtem o path do arquivo carregado na classe cbinary
 	/// </summary>
 	/// <returns>Retorna um objeto std::string contendo o path</returns>
-	std::basic_string<char, std::char_traits<char>, std::allocator<char>> getFilePath();
+	std::basic_string< char, std::char_traits< char >, std::allocator< char > > getFilePath(
+		void
+	);
 
 	/// <summary>
 	///		Esse método converte um endereço virtual(RVA) para um offset de arquivo válido
@@ -100,7 +106,10 @@ public:
 	/// <param name="relativeVirtualAddress">RVA de no máximo 4 bytes</param>
 	/// <param name="ctx">Contexto de seção</param>
 	/// <returns>O offset do arquivo</returns>
-	static int converterRelativeVirtualAddressToFileOffset( std::uint64_t superidolhash, void* ctx );
+	static int converterRelativeVirtualAddressToFileOffset(
+		std::uint64_t superidolhash,
+		void* ctx
+	);
 	
 	/// <summary>
 	///		Esse método fecha o contexto aberto do binário no qual está se trabalhando

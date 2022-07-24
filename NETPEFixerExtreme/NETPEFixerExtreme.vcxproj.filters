@@ -16,6 +16,21 @@
     <Filter Include="The3rd">
       <UniqueIdentifier>{e4cd593e-3fe2-4e65-9866-31426a93df7e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="The3rd\curl">
+      <UniqueIdentifier>{90a713a9-8101-4449-9ebd-1fa943896dda}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="The3rd\curl\32DBG">
+      <UniqueIdentifier>{a5209376-2215-43d0-aef5-fbe918e26946}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="The3rd\curl\32REL">
+      <UniqueIdentifier>{1dea8914-83b6-4b63-b45b-c1ec9997d6f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="The3rd\curl\64DBG">
+      <UniqueIdentifier>{3a334684-73cb-420a-84d8-cc4b9523fd1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="The3rd\curl\64REL">
+      <UniqueIdentifier>{a2a42024-f46b-41a9-89f3-5f3460493fc9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NETPEFixerExtreme.cc">
@@ -31,6 +46,9 @@
       <Filter>Arquivos de Origem</Filter>
     </ClCompile>
     <ClCompile Include="CTelemetry.cc">
+      <Filter>Arquivos de Origem</Filter>
+    </ClCompile>
+    <ClCompile Include="CDiscordNetwork.cc">
       <Filter>Arquivos de Origem</Filter>
     </ClCompile>
   </ItemGroup>
@@ -50,8 +68,140 @@
     <ClInclude Include="The3rd\json.hpp">
       <Filter>The3rd</Filter>
     </ClInclude>
-    <ClInclude Include="The3rd\HTTPRequest.hpp">
-      <Filter>The3rd</Filter>
+    <ClInclude Include="CDiscordNetwork.hh">
+      <Filter>Arquivos de Cabeçalho</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 debug\include\curl\curl.h">
+      <Filter>The3rd\curl\32DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 debug\include\curl\curlver.h">
+      <Filter>The3rd\curl\32DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 debug\include\curl\easy.h">
+      <Filter>The3rd\curl\32DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 debug\include\curl\header.h">
+      <Filter>The3rd\curl\32DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 debug\include\curl\mprintf.h">
+      <Filter>The3rd\curl\32DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 debug\include\curl\multi.h">
+      <Filter>The3rd\curl\32DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 debug\include\curl\options.h">
+      <Filter>The3rd\curl\32DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 debug\include\curl\stdcheaders.h">
+      <Filter>The3rd\curl\32DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 debug\include\curl\system.h">
+      <Filter>The3rd\curl\32DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 debug\include\curl\typecheck-gcc.h">
+      <Filter>The3rd\curl\32DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 debug\include\curl\urlapi.h">
+      <Filter>The3rd\curl\32DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 release\include\curl\curl.h">
+      <Filter>The3rd\curl\32REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 release\include\curl\curlver.h">
+      <Filter>The3rd\curl\32REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 release\include\curl\easy.h">
+      <Filter>The3rd\curl\32REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 release\include\curl\header.h">
+      <Filter>The3rd\curl\32REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 release\include\curl\mprintf.h">
+      <Filter>The3rd\curl\32REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 release\include\curl\multi.h">
+      <Filter>The3rd\curl\32REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 release\include\curl\options.h">
+      <Filter>The3rd\curl\32REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 release\include\curl\stdcheaders.h">
+      <Filter>The3rd\curl\32REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 release\include\curl\system.h">
+      <Filter>The3rd\curl\32REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 release\include\curl\typecheck-gcc.h">
+      <Filter>The3rd\curl\32REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x32 release\include\curl\urlapi.h">
+      <Filter>The3rd\curl\32REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 debug\include\curl\curl.h">
+      <Filter>The3rd\curl\64DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 debug\include\curl\curlver.h">
+      <Filter>The3rd\curl\64DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 debug\include\curl\easy.h">
+      <Filter>The3rd\curl\64DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 debug\include\curl\header.h">
+      <Filter>The3rd\curl\64DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 debug\include\curl\mprintf.h">
+      <Filter>The3rd\curl\64DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 debug\include\curl\multi.h">
+      <Filter>The3rd\curl\64DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 debug\include\curl\options.h">
+      <Filter>The3rd\curl\64DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 debug\include\curl\stdcheaders.h">
+      <Filter>The3rd\curl\64DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 debug\include\curl\system.h">
+      <Filter>The3rd\curl\64DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 debug\include\curl\typecheck-gcc.h">
+      <Filter>The3rd\curl\64DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 debug\include\curl\urlapi.h">
+      <Filter>The3rd\curl\64DBG</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 release\include\curl\curl.h">
+      <Filter>The3rd\curl\64REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 release\include\curl\curlver.h">
+      <Filter>The3rd\curl\64REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 release\include\curl\easy.h">
+      <Filter>The3rd\curl\64REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 release\include\curl\header.h">
+      <Filter>The3rd\curl\64REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 release\include\curl\mprintf.h">
+      <Filter>The3rd\curl\64REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 release\include\curl\multi.h">
+      <Filter>The3rd\curl\64REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 release\include\curl\options.h">
+      <Filter>The3rd\curl\64REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 release\include\curl\stdcheaders.h">
+      <Filter>The3rd\curl\64REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 release\include\curl\system.h">
+      <Filter>The3rd\curl\64REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 release\include\curl\typecheck-gcc.h">
+      <Filter>The3rd\curl\64REL</Filter>
+    </ClInclude>
+    <ClInclude Include="The3rd\curl_7.84.0\x64 release\include\curl\urlapi.h">
+      <Filter>The3rd\curl\64REL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

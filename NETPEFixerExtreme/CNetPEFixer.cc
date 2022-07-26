@@ -219,7 +219,14 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 					ctx->mp( offsetParaMetadaSecao + 12 );
 					ctx->r( &mh->length, sizeof(std::int32_t) );
 					ctx->mp( offsetParaMetadaSecao + 16 );
-					ctx->r( &mh->versionMagicString, mh->length ); // <- Aprimoramento, o total de bytes a serem lidos desse offset é 0x0c então criar uma função lambda para esse trabalho!
+		
+					// Lógica para leitura da string da versão do cabeçalho BSJB
+					std::invoke([ &mh, &ctx ] ( void ) {
+						mh->versionMagicString = reinterpret_cast< std::byte* >( CMemSafety::getMemory( mh->length * sizeof(std::byte) ) ); // Byte tem o tamanho 1 de qualquer forma, porem é uma boa prática manter!
+						for ( auto i = 0; i < mh->length; i++ )
+							ctx->r( &*( mh->versionMagicString + i ), sizeof(byte) );
+					} );
+
 					ctx->mp( offsetParaMetadaSecao + 16 + mh->length );
 					ctx->r( &mh->flags, sizeof(std::int16_t) );
 					ctx->mp( offsetParaMetadaSecao + 18 + mh->length );
@@ -230,29 +237,36 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 
 					auto* Metasections = reinterpret_cast< MetaDataHeaderSections* >( CMemSafety::getMemory( mh->NumberSections * sizeof(MetaDataHeaderSections) ) );
 
-					for ( int i = 0; i < mh->NumberSections; i++ ) {
+					for ( int i = 0; i < mh->NumberSections; i++ ) { // o Deslocamento está um offset a frente durante os testes, corrigir
 
-						(Metasections + i)->headerctx = ctx->gp( );
-						ctx->r( &(Metasections+ i)->offset, sizeof(std::int32_t) );
-						ctx->r( &(Metasections + i)->size, sizeof(std::int32_t) );
+						Metasections[i].headerctx = ctx->gp(); // Maybe segmentação devido a seções superiores a 5, corrigir e "string\0"
+						ctx->r( &Metasections[i].offset, sizeof(std::int32_t) );
+						ctx->r(&Metasections[i].size, sizeof(std::int32_t));
 
 						//LER CADA BYTE INDIVIDUALMENTE E CALCULAR O MODULO POR 4!
-						char* tmpArr = new char[ 32 ];
+						char tmpArr[32]{ 0 };
+
 						int ii = 0, ix = 0;
+
 						byte b = 0;
 
-						//- VALIDAR A LÓGICA DE IMPLEMENTAÇÃO COM TESTE DE BINÁRIO'S EXEMPLO DA PASTA TESTES
-						while ( ctx->r( &b, 1 ), b != 0, ctx->mp( ctx->gp( ) + ix ), ix++ ) // validar bytes lidos da MetaDataHeader
+						do {
+							ctx->r( &b, 1 );
+
+							ctx->mp( ctx->gp( ) + ix );
+
 							tmpArr[ ii++ ] = b;
-						
-						ii++;
+
+							ix++;
+
+						} while ( b != 0 );
 
 						int quantidade = ( ii % 4 != 0 ) ? ( 4 - ii % 4 ) : 0; // Determinando a quantidade lida bytes obtida da MetaDataSection
 						
-						ctx->mp(ctx->gp( ) + quantidade);  // Devo mover a quantidade correta
+						ctx->mp( ctx->gp( ) + quantidade );  // Devo mover a quantidade correta
 
-						if ( static_cast< int >(mh->NumberSections - 1) == i ) 
-							num8 = (Metasections + i)->offset + (Metasections + i)->size; // calculando o novo tamanho para a MetaData
+						if ( static_cast< int >( mh->NumberSections - 1 ) == i ) 
+							num8 = Metasections[i].offset + Metasections[i].size; // calculando o novo tamanho para a MetaData
 						
 
 					}
@@ -271,20 +285,39 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 						} );
 
 					
-					else 
+					else {
 
-						std::operator<<( std::cout, "Definido um novo tamanho para a Metadata, agora será de " )
-										.operator<<( std::hex )
-										.operator<<( num8 )
-										.operator<<( std::endl );
+						std::operator<<(std::cout, "Definido um novo tamanho para a Metadata, agora será de ")
+							.operator<<(std::hex)
+							.operator<<(num8)
+							.operator<<(std::endl);
+
 
 						// GRAVAR A LÓGICA NO BINÁRIO AQUI
 						// DEVE-SE GRAVAR O NOVO TAMANHO ARMAZENADO EM num8, corrigir o offset de memória para arquivo somendo a diferença de 8 com o tamanho total da quantidade de bytes, nesse caso + 4 e mais 4 de diferença do endereço
 						// FIM DA LÓGICA - NECESSITA CASO DE TESTE DE BINÁRIOS DEMOS !
+						CMemSafety::safeMemMove(
 
-					
-					//AUTO TESTE IMPLEMENTAÇÃO
+												reinterpret_cast< void* >( num8 ),
+												&*( binaryBytesRaw + CBinary::converterRelativeVirtualAddressToFileOffset(
+																	inh->OptionalHeader.DataDirectory[14].VirtualAddress << 8 | inh->FileHeader.NumberOfSections,
+																    sections ) + 8 + 4 ),
+																	sizeof( int )
+												
+												);
 
+						ctx->mp( CBinary::converterRelativeVirtualAddressToFileOffset(
+
+							inh->OptionalHeader.DataDirectory[14].VirtualAddress << 8 | inh->FileHeader.NumberOfSections,
+							sections) + 8 + 4
+
+						);
+
+						ctx->w( reinterpret_cast< void* >( num8 ), sizeof( int ) );
+
+
+
+					}
 
 					//Limpando toda região mapeada e gravando arquivo
 					CMemSafety::memFlush( Metasections );

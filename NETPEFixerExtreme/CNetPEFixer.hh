@@ -18,7 +18,7 @@ namespace CNetPEFixer
 		std::int16_t MinorVersion;
 		std::int32_t m$reserved;
 		std::int32_t length;
-		std::int32_t versionMagicString;
+		std::byte *versionMagicString;
 		std::int16_t flags;
 		std::int16_t NumberSections;
 

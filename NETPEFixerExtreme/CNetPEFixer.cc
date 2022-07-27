@@ -6,7 +6,7 @@
 /// <param name="ctx">Contexto do binário</param>
 auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 	
-	bool CorrigirDiretorioMetadata = true, corrigirBSJB = true; // EM DESENVOLVIMENTO OBVIAMENTE MUITO MAIS OPÇÕES VÃO ESTAR DISPONÍVEIS
+	bool corrigirDiretorioMetadata = true, corrigirBSJB = true, corrigirNumerosDosRVAseTamanhos = true; // EM DESENVOLVIMENTO OBVIAMENTE MUITO MAIS OPÇÕES VÃO ESTAR DISPONÍVEIS
 
 	std::operator<<( std::operator<<( std::cout, "Corrigindo arquivo PE Net -> " ), ctx->getFilePath( ) ).operator<<( std::endl );
 
@@ -56,7 +56,7 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 		}
 	}
 
-	if ( CorrigirDiretorioMetadata ) {
+	if ( corrigirDiretorioMetadata ) {
 
 		if ( !flag ) {
 
@@ -131,7 +131,7 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 			} );
 		else {
 
-			bool flag3 = true;
+			bool isMetaDataBSJBFixed = true;
 			ctx->mp( static_cast<long>( CBinary::converterRelativeVirtualAddressToFileOffset(
 				inh->OptionalHeader.DataDirectory[14].VirtualAddress << 8 | inh->FileHeader.NumberOfSections, sections
 			) + 8 ) );
@@ -140,17 +140,17 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 			ctx->r( &num4, sizeof(std::int32_t) );//std::int32_t e int32_t é o mesmo, então não abra uma PR!
 
 			if (num4 <= 0)
-				flag3 = false;
+				isMetaDataBSJBFixed = false;
 			else {
 				int num5 = CBinary::converterRelativeVirtualAddressToFileOffset( num4 << 8 | inh->FileHeader.NumberOfSections, sections );
 				if ( num5 == 0 )
-					flag3 = false;
-				if ( flag3 ) {
+					isMetaDataBSJBFixed = false;
+				if ( isMetaDataBSJBFixed ) {
 					ctx->mp( (long)num5 );
 					std::int32_t num6 = 0;
 					ctx->r( &num6, sizeof(std::int32_t) );
 					if ( num6 != 1112167234 ) {
-						flag3 = false;
+						isMetaDataBSJBFixed = false;
 					}
 				}
 			}
@@ -161,11 +161,11 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 			if ( corrigirBSJB ) {
 
 				int valorPredizidoParaBSJB = 0;
-				if ( !flag3 ) {
+				if ( !isMetaDataBSJBFixed ) {
 
 					//Vamos mapear todo arquivo em memória
 					ctx->mp( 0x00 );
-					auto* binaryBytesRaw = CMemSafety::getMemory( ctx->getFSz() );
+					auto* binaryBytesRaw = CMemSafety::getMemory( ctx->getFSz( ) );
 					ctx->r( binaryBytesRaw, ctx->getFSz( ) ); // vamos ler todo o arquivo e armazenar uma cópia de seus bytes de maneira segura
 
 					for ( int j = 0; j < ctx->getFSz( ); j++ )
@@ -198,7 +198,7 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 					CMemSafety::safeMemMove( &valorPredizidoParaBSJB, &*(binaryBytesRaw + ( CBinary::converterRelativeVirtualAddressToFileOffset( inh->OptionalHeader.DataDirectory[14].VirtualAddress << 8 | inh->FileHeader.NumberOfSections, sections ) + 8) ), sizeof(valorPredizidoParaBSJB) );
 					
 					//calculando tamanho da seção metadata!
-					int num8 = 0;
+					int sizePredicted = 0;
 					std::int64_t offsetParaMetadaSecao = CBinary::converterRelativeVirtualAddressToFileOffset( valorPredizidoParaBSJB << 8 | inh->FileHeader.NumberOfSections, sections );
 					ctx->mp( offsetParaMetadaSecao );
 					
@@ -235,15 +235,16 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 
 					//Calculando o tamanho do Metadata
 
-					auto* Metasections = reinterpret_cast< MetaDataHeaderSections* >( CMemSafety::getMemory( mh->NumberSections * sizeof(MetaDataHeaderSections) ) );
+					auto Metasections = new MetaDataHeaderSections[ mh->NumberSections ];
 
-					for ( int i = 0; i < mh->NumberSections; i++ ) { // o Deslocamento está um offset a frente durante os testes, corrigir
+					for ( int i = 0; i < mh->NumberSections; i++ ) {
 
-						Metasections[i].headerctx = ctx->gp(); // Maybe segmentação devido a seções superiores a 5, corrigir e "string\0"
+						Metasections[i].headerctx = ctx->gp( );
+
 						ctx->r( &Metasections[i].offset, sizeof(std::int32_t) );
-						ctx->r(&Metasections[i].size, sizeof(std::int32_t));
 
-						//LER CADA BYTE INDIVIDUALMENTE E CALCULAR O MODULO POR 4!
+						ctx->r( &Metasections[i].size, sizeof(std::int32_t) );
+
 						char tmpArr[32]{ 0 };
 
 						int ii = 0, ix = 0;
@@ -252,8 +253,6 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 
 						do {
 							ctx->r( &b, 1 );
-
-							ctx->mp( ctx->gp( ) + ix );
 
 							tmpArr[ ii++ ] = b;
 
@@ -266,16 +265,14 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 						ctx->mp( ctx->gp( ) + quantidade );  // Devo mover a quantidade correta
 
 						if ( static_cast< int >( mh->NumberSections - 1 ) == i ) 
-							num8 = Metasections[i].offset + Metasections[i].size; // calculando o novo tamanho para a MetaData
+							sizePredicted = Metasections[i].offset + Metasections[i].size; // calculando o novo tamanho para a MetaData
 						
 
 					}
 
+					if ( sizePredicted == 0 ) 
 
-					//TESTE DE CASO, BASEADO NOS BINÁRIOS QUE PRECISO EXECUTAR O AUTO TESTE!!!
-					if ( num8 == 0 ) 
-
-						std::invoke( [] ( void ) {
+						std::invoke( [ ] ( void ) {
 
 							std::operator<<(
 								std::cerr, "Não foi possível obter o tamanho calculado correto para a Metadata, você deve predizer um valor ou encontra manualmente, recomendo usar o IDA ou PE Bear!\n"
@@ -283,39 +280,20 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 							exit(-1);
 
 						} );
-
 					
 					else {
 
-						std::operator<<(std::cout, "Definido um novo tamanho para a Metadata, agora será de ")
-							.operator<<(std::hex)
-							.operator<<(num8)
-							.operator<<(std::endl);
+						std::operator<<( std::cout, "Definido um novo tamanho para a Metadata, agora será de " )
+							.operator<<( std::hex )
+							.operator<<( sizePredicted )
+							.operator<<( std::endl );
 
+						//Gravando valor recalculado do tamanho de metadata
+						CMemSafety::safeMemMove( &sizePredicted, &*( binaryBytesRaw + CBinary::converterRelativeVirtualAddressToFileOffset(inh->OptionalHeader.DataDirectory[14].VirtualAddress << 8 | inh->FileHeader.NumberOfSections, sections ) + 8 + 4 ), sizeof( int ) );
 
-						// GRAVAR A LÓGICA NO BINÁRIO AQUI
-						// DEVE-SE GRAVAR O NOVO TAMANHO ARMAZENADO EM num8, corrigir o offset de memória para arquivo somendo a diferença de 8 com o tamanho total da quantidade de bytes, nesse caso + 4 e mais 4 de diferença do endereço
-						// FIM DA LÓGICA - NECESSITA CASO DE TESTE DE BINÁRIOS DEMOS !
-						CMemSafety::safeMemMove(
+						ctx->mp( CBinary::converterRelativeVirtualAddressToFileOffset( inh->OptionalHeader.DataDirectory[14].VirtualAddress << 8 | inh->FileHeader.NumberOfSections, sections ) + 8 + 4 );
 
-												reinterpret_cast< void* >( num8 ),
-												&*( binaryBytesRaw + CBinary::converterRelativeVirtualAddressToFileOffset(
-																	inh->OptionalHeader.DataDirectory[14].VirtualAddress << 8 | inh->FileHeader.NumberOfSections,
-																    sections ) + 8 + 4 ),
-																	sizeof( int )
-												
-												);
-
-						ctx->mp( CBinary::converterRelativeVirtualAddressToFileOffset(
-
-							inh->OptionalHeader.DataDirectory[14].VirtualAddress << 8 | inh->FileHeader.NumberOfSections,
-							sections) + 8 + 4
-
-						);
-
-						ctx->w( reinterpret_cast< void* >( num8 ), sizeof( int ) );
-
-
+						ctx->w( &sizePredicted, sizeof( int ) );
 
 					}
 
@@ -325,18 +303,35 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 					ctx->w( binaryBytesRaw, ctx->getFSz( ) ); // Vamos gravar todo conteúdo do arquivo mapeado na memória
 					CMemSafety::memFlush( binaryBytesRaw ); // limpar o buffer da memória
 
-				}
+					isMetaDataBSJBFixed = true;
 
-				//continuar aqui !!!
+				}
 
 			}
 
+			if ( !isMetaDataBSJBFixed )
+				std::invoke( [ ]( void ) {
+					std::operator<<( std::cout, "A ferramenta falhou ao tentar determinar o RVA para Metadata (BSJB).\n" )
+									.operator<<( "Por favor descubra ou determine um novo valor !" )
+									.operator<<( std::endl );
+					exit( -1 );
+				} );
+			
+			else {
+
+				if ( corrigirNumerosDosRVAseTamanhos && inh->OptionalHeader.NumberOfRvaAndSizes != CBinaryType::NT_PE_NET_MINIMUM_RVA_SIZES ) {
+					ctx->mp( static_cast< long >( idh->e_lfanew + 116 ) );
+					int PE_NET_MINIMUM_RVA = 16;
+					ctx->w( &PE_NET_MINIMUM_RVA, sizeof(int) );
+					std::operator<<( std::cout, "O RVA tinha um problema, o tamanho dele não cumpria o requisito minimo de 16, agora eu escrevi nele 16 para que o loader deixe-o passar !" ).operator<<( std::endl );
+				}
+				//APLICAR AQUI AS LÓGICAS PARA AS PRÓXIMAS CORREÇÕES !
+
+			}
+
+
+
 		}
-
-
-		
-
-
 	}
 
 	/// <summary>

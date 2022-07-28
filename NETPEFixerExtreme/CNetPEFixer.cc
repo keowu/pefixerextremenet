@@ -6,7 +6,7 @@
 /// <param name="ctx">Contexto do binário</param>
 auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 	
-	bool corrigirDiretorioMetadata = true, corrigirBSJB = true, corrigirNumerosDosRVAseTamanhos = true; // EM DESENVOLVIMENTO OBVIAMENTE MUITO MAIS OPÇÕES VÃO ESTAR DISPONÍVEIS
+	bool corrigirDiretorioMetadata = true, corrigirBSJB = true, corrigirNumerosDosRVAseTamanhos = true, corrigirDiretorioNet = true; // EM DESENVOLVIMENTO OBVIAMENTE MUITO MAIS OPÇÕES VÃO ESTAR DISPONÍVEIS
 
 	std::operator<<( std::operator<<( std::cout, "Corrigindo arquivo PE Net -> " ), ctx->getFilePath( ) ).operator<<( std::endl );
 
@@ -247,16 +247,14 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 
 						char tmpArr[32]{ 0 };
 
-						int ii = 0, ix = 0;
+						int ii = 0;
 
 						byte b = 0;
 
 						do {
+
 							ctx->r( &b, 1 );
-
 							tmpArr[ ii++ ] = b;
-
-							ix++;
 
 						} while ( b != 0 );
 
@@ -293,7 +291,7 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 
 						ctx->mp( CBinary::converterRelativeVirtualAddressToFileOffset( inh->OptionalHeader.DataDirectory[14].VirtualAddress << 8 | inh->FileHeader.NumberOfSections, sections ) + 8 + 4 );
 
-						ctx->w( &sizePredicted, sizeof( int ) );
+						ctx->w( &sizePredicted, sizeof(int) );
 
 					}
 
@@ -323,8 +321,51 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 					ctx->mp( static_cast< long >( idh->e_lfanew + 116 ) );
 					int PE_NET_MINIMUM_RVA = 16;
 					ctx->w( &PE_NET_MINIMUM_RVA, sizeof(int) );
-					std::operator<<( std::cout, "O RVA tinha um problema, o tamanho dele não cumpria o requisito minimo de 16, agora eu escrevi nele 16 para que o loader deixe-o passar !" ).operator<<( std::endl );
+					std::operator<<( std::cout, "O RVA tinha um problema, o tamanho dele não cumpria o requisito minimo de 16, agora eu escrevi nele 16 para que o loader deixe-o passar !" )
+									.operator<<( std::endl );
 				}
+
+				//Lógica para corrigir todo o diretório .net do PE
+				if ( corrigirDiretorioNet && flag && isMetaDataBSJBFixed ) {
+
+					int rvaBase = CBinary::converterRelativeVirtualAddressToFileOffset( inh->OptionalHeader.DataDirectory[14].VirtualAddress << 8 | inh->FileHeader.NumberOfSections, sections );
+					ctx->mp( rvaBase );
+					std::int32_t cbField = 0; ctx->r( &cbField, sizeof(std::int32_t) );
+					if ( cbField != CBinaryType::NT_PE_NET_DIR_CORRECT_CB_FIELD ) {
+						std::operator<<( std::cout, "O field CB foi definido para 0x48, pois estava errado." )
+							.operator<<( std::endl );
+						ctx->mp( rvaBase );
+						byte cbField = 72;
+						ctx->w( &cbField, sizeof(byte) );
+					}
+
+					short majorRuntimeVersionRead = 0, mirorRuntimeVersionRead = 0;
+					ctx->mp( rvaBase + sizeof(std::int32_t) );
+					ctx->r( &majorRuntimeVersionRead, sizeof(std::int16_t) );
+					ctx->r( &mirorRuntimeVersionRead, sizeof(std::int16_t) );
+					
+					if ( majorRuntimeVersionRead != CBinaryType::NT_PE_NET_DIR_CORRECT_MAJORRUNTIME ) {
+
+						std::operator<<( std::cout, "O field MajorRuntimeVersion foi definido para o valor correto de 2." )
+							.operator<<( std::endl );
+						byte majorRuntimeVersionField = 2;
+						ctx->mp( rvaBase + sizeof(std::int32_t) );
+						ctx->w( &majorRuntimeVersionField, sizeof(byte) );
+
+					}
+
+					if ( mirorRuntimeVersionRead != CBinaryType::NT_PE_NET_DIR_CORRECT_MIRORRUNTIME && mirorRuntimeVersionRead != 0 ) {
+						
+						std::operator<<( std::cout, "O field MirorRuntimeVersion foi definido para o valor correto de 5" )
+							.operator<<( std::endl );
+						byte mirorRuntimeVersionField = 5;
+						ctx->mp( rvaBase + sizeof(std::int32_t) + sizeof(std::int16_t) );
+						ctx->w( &mirorRuntimeVersionField, sizeof(byte) );
+
+					}
+					
+				}
+
 				//APLICAR AQUI AS LÓGICAS PARA AS PRÓXIMAS CORREÇÕES !
 
 			}

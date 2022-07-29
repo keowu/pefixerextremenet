@@ -6,7 +6,8 @@
 /// </summary>
 enum CMemSafety_ERROR {
 
-	INVALID_MEMORY_ALLOCATION = 0
+	INVALID_MEMORY_ALLOCATION = 0,
+	MEMORY_CONTENT_ARE_EQUALS = 0
 
 };
 
@@ -18,7 +19,7 @@ namespace CMemSafety
 	/// <param name="tamanho">Tamanho da alocação</param>
 	/// <returns>Retorna um ponteiro para o início da locação reinterpretada como UCHAR*</returns>
 	unsigned char* getMemory(
-		size_t tamanho
+		std::size_t tamanho
 	);
 
 	/// <summary>
@@ -31,7 +32,7 @@ namespace CMemSafety
 	bool safeMemMove(
 		void* destino,
 		void* origem,
-		size_t tamanho
+		std::size_t tamanho
 	);
 
 	/// <summary>
@@ -44,7 +45,20 @@ namespace CMemSafety
 	bool safeMemMove(
 		const char* origem,
 		void* destino,
-		size_t tamanho
+		std::size_t tamanho
+	);
+
+	/// <summary>
+	///		Esse método compara o conteúdo de duas regiões da memória e verifica se são identicos com base em um tamanho determinado
+	/// </summary>
+	/// <param name="patternOne">Ponteiro para primeira região a comparar</param>
+	/// <param name="patternTwo">Ponteiro para segunda região a comparar</param>
+	/// <param name="patternSize">Tamanho da região na qual deseja-se comparar</param>
+	/// <returns></returns>
+	bool compareMem(
+		void* patternOne,
+		void* patternTwo,
+		std::size_t patternSize
 	);
 
 	/// <summary>

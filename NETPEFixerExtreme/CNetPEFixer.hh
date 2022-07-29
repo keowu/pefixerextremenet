@@ -8,6 +8,16 @@ namespace CNetPEFixer
 {
 
 	/// <summary>
+	///  Payload do binário de exemplo UM para ser usado como assinatura para buscar a IAT(ImportDir)
+	/// </summary>
+	static unsigned char iatDirBinaryPayloadSignOne[]{
+			0x6D, 0x73, 0x63, 0x6F,
+			0x72, 0x65,	0x65, 0x2E,
+			0x64, 0x6C,	0x6C, 0x00
+	};
+
+
+	/// <summary>
 	///		MetaDataHeader - .net Microsoft Corporation
 	///		Fonte: https://ntcore.com/files/dotnetformat.htm#MetaSection
 	/// </summary>

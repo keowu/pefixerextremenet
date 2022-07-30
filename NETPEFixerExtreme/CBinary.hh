@@ -112,10 +112,11 @@ public:
 	/// <param name="ctx">Contexto de seção</param>
 	/// <returns>O offset do arquivo</returns>
 	static int converterRelativeVirtualAddressToFileOffset(
-		std::uint64_t superidolhash,
+		std::uint64_t superidolhash, 
+		std::uint64_t NumberOfSections,
 		void* ctx
 	);
-	
+
 	/// <summary>
 	///		Esse método fecha o contexto aberto do binário no qual está se trabalhando
 	/// </summary>

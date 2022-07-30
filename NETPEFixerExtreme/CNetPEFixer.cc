@@ -48,7 +48,8 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 	else {
 		//Por preguiça de criar um segundo parâmetro e pelo meu colega de equipe não ficar quieto eu cirei a super idolhash: superidolhash = inh->OptionalHeader.DataDirectory[14].VirtualAddress << 8 | inh->FileHeader.NumberOfSections
 		int metadataDirRVA = CBinary::converterRelativeVirtualAddressToFileOffset( 
-			inh->OptionalHeader.DataDirectory[14].VirtualAddress << 8 | inh->FileHeader.NumberOfSections,
+			inh->OptionalHeader.DataDirectory[14].VirtualAddress,
+			inh->FileHeader.NumberOfSections,
 			sections
 			);
 		if ( metadataDirRVA == 0 ) {
@@ -61,7 +62,7 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 		if ( !flag ) {
 
 			int newrvaMetadata = 0;
-			int correctrvaMetadata = CBinary::converterRelativeVirtualAddressToFileOffset( 8192 << 8 | inh->FileHeader.NumberOfSections, sections );
+			int correctrvaMetadata = CBinary::converterRelativeVirtualAddressToFileOffset( 8192, inh->FileHeader.NumberOfSections, sections );
 			if (correctrvaMetadata != 0) {
 
 				std::operator<<( std::cout, "O RVA do diretório MetaData do PE.net é inválido, vou fazer uma busca personalizada." ).operator<<( std::endl );
@@ -133,7 +134,7 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 
 			bool isMetaDataBSJBFixed = true;
 			ctx->mp( static_cast<long>( CBinary::converterRelativeVirtualAddressToFileOffset(
-				inh->OptionalHeader.DataDirectory[14].VirtualAddress << 8 | inh->FileHeader.NumberOfSections, sections
+				inh->OptionalHeader.DataDirectory[14].VirtualAddress, inh->FileHeader.NumberOfSections, sections
 			) + 8 ) );
 
 			std::int32_t actualBSJBfield = 0;
@@ -142,7 +143,7 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 			if (actualBSJBfield <= 0)
 				isMetaDataBSJBFixed = false;
 			else {
-				int num5 = CBinary::converterRelativeVirtualAddressToFileOffset( actualBSJBfield << 8 | inh->FileHeader.NumberOfSections, sections );
+				int num5 = CBinary::converterRelativeVirtualAddressToFileOffset( actualBSJBfield, inh->FileHeader.NumberOfSections, sections );
 				if ( num5 == 0 )
 					isMetaDataBSJBFixed = false;
 				if ( isMetaDataBSJBFixed ) {
@@ -178,7 +179,7 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 							}
 							else
 							{
-								valorPredizidoParaBSJB = CBinary::converterRelativeVirtualAddressToFileOffset( j << 8 | inh->FileHeader.NumberOfSections, sections );
+								valorPredizidoParaBSJB = CBinary::converterRelativeVirtualAddressToFileOffset( j, inh->FileHeader.NumberOfSections, sections );
 							}
 						}
 					}
@@ -195,11 +196,11 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 
 
 					//Vamos salvar no arquivo o novo valor do BSJB assumido pela ferramenta
-					CMemSafety::safeMemMove( &valorPredizidoParaBSJB, &*(binaryBytesRaw + ( CBinary::converterRelativeVirtualAddressToFileOffset( inh->OptionalHeader.DataDirectory[14].VirtualAddress << 8 | inh->FileHeader.NumberOfSections, sections ) + 8) ), sizeof(valorPredizidoParaBSJB) );
+					CMemSafety::safeMemMove( &valorPredizidoParaBSJB, &*(binaryBytesRaw + ( CBinary::converterRelativeVirtualAddressToFileOffset( inh->OptionalHeader.DataDirectory[14].VirtualAddress, inh->FileHeader.NumberOfSections, sections ) + 8) ), sizeof(valorPredizidoParaBSJB) );
 					
 					//calculando tamanho da seção metadata!
 					int sizePredicted = 0;
-					std::int64_t offsetParaMetadaSecao = CBinary::converterRelativeVirtualAddressToFileOffset( valorPredizidoParaBSJB << 8 | inh->FileHeader.NumberOfSections, sections );
+					std::int64_t offsetParaMetadaSecao = CBinary::converterRelativeVirtualAddressToFileOffset( valorPredizidoParaBSJB, inh->FileHeader.NumberOfSections, sections );
 					ctx->mp( offsetParaMetadaSecao );
 					
 
@@ -287,9 +288,9 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 							.operator<<( std::endl );
 
 						//Gravando valor recalculado do tamanho de metadata
-						CMemSafety::safeMemMove( &sizePredicted, &*( binaryBytesRaw + CBinary::converterRelativeVirtualAddressToFileOffset(inh->OptionalHeader.DataDirectory[14].VirtualAddress << 8 | inh->FileHeader.NumberOfSections, sections ) + 8 + 4 ), sizeof( int ) );
+						CMemSafety::safeMemMove( &sizePredicted, &*( binaryBytesRaw + CBinary::converterRelativeVirtualAddressToFileOffset(inh->OptionalHeader.DataDirectory[14].VirtualAddress, inh->FileHeader.NumberOfSections, sections ) + 8 + 4 ), sizeof( int ) );
 
-						ctx->mp( CBinary::converterRelativeVirtualAddressToFileOffset( inh->OptionalHeader.DataDirectory[14].VirtualAddress << 8 | inh->FileHeader.NumberOfSections, sections ) + 8 + 4 );
+						ctx->mp( CBinary::converterRelativeVirtualAddressToFileOffset( inh->OptionalHeader.DataDirectory[14].VirtualAddress, inh->FileHeader.NumberOfSections, sections ) + 8 + 4 );
 
 						ctx->w( &sizePredicted, sizeof(int) );
 
@@ -328,7 +329,7 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 				//Lógica para corrigir todo o diretório .net do PE
 				if ( corrigirDiretorioNet && flag && isMetaDataBSJBFixed ) {
 
-					int rvaBase = CBinary::converterRelativeVirtualAddressToFileOffset( inh->OptionalHeader.DataDirectory[14].VirtualAddress << 8 | inh->FileHeader.NumberOfSections, sections );
+					int rvaBase = CBinary::converterRelativeVirtualAddressToFileOffset( inh->OptionalHeader.DataDirectory[14].VirtualAddress, inh->FileHeader.NumberOfSections, sections );
 					ctx->mp( rvaBase );
 					std::int32_t cbField = 0; ctx->r( &cbField, sizeof(std::int32_t) );
 					if ( cbField != CBinaryType::NT_PE_NET_DIR_CORRECT_CB_FIELD ) {
@@ -376,12 +377,12 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 					isImportDirRVAcorreto = { false };
 				else {
 
-					actualOffsetOfImportDir = CBinary::converterRelativeVirtualAddressToFileOffset( inh->OptionalHeader.DataDirectory[1].VirtualAddress << 8 | inh->FileHeader.NumberOfSections, sections );
+					actualOffsetOfImportDir = CBinary::converterRelativeVirtualAddressToFileOffset( inh->OptionalHeader.DataDirectory[1].VirtualAddress, inh->FileHeader.NumberOfSections, sections );
 					
 					if ( actualOffsetOfImportDir == 0 )
 						isImportDirRVAcorreto = { false };
 				
-					if ( CBinary::converterRelativeVirtualAddressToFileOffset( ( inh->OptionalHeader.DataDirectory[1].VirtualAddress + 40 ) << 8 | inh->FileHeader.NumberOfSections, sections ) == 0 )
+					if ( CBinary::converterRelativeVirtualAddressToFileOffset( ( inh->OptionalHeader.DataDirectory[1].VirtualAddress + 40 ), inh->FileHeader.NumberOfSections, sections ) == 0 )
 						isImportDirRVAcorreto = { false };
 
 				}
@@ -404,20 +405,57 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 					auto* fileBytes = CMemSafety::getMemory( ctx->getFSz() );
 					ctx->r( fileBytes, ctx->getFSz( ) );
 
-
 					//1º Obter RVA, 2º calcular offset arquivo
-					int num21 = *( fileBytes + actualOffsetOfImportDir + 12 + i ); 
-					int num22 = CBinary::converterRelativeVirtualAddressToFileOffset( num21 << 8 | inh->FileHeader.NumberOfSections, sections );
+					//CORRIGIR O RVA DA IMPORT DIR ESTÁ EQUIVOCADO 0X20000 não considerado
+					int num21 = 0;
+
+					CMemSafety::safeMemMove(&num21, &*(fileBytes + actualOffsetOfImportDir + 12 + i), sizeof(std::int32_t));
+
+					int num22 = CBinary::converterRelativeVirtualAddressToFileOffset( num21, inh->FileHeader.NumberOfSections, sections );
 
 					//Provavelmente será necessário validar o ponteiro e a área de memória
 					try {
 
-
 						while ( num21 != 0 && num22 != 0 ) {
 
+							auto* buff = reinterpret_cast< unsigned char* >( CMemSafety::getMemory(12) );
+
+							CMemSafety::safeMemMove( buff, &*(fileBytes + num22), 12 );
+
 							//verificar e buscar padrão da IAT
+							if ( CMemSafety::compareMem( CNetPEFixer::iatDirBinaryPayloadSignOne, buff, 12) ) {
+								int num23 = 0;
+								CMemSafety::safeMemMove( &num23, &*(fileBytes + actualOffsetOfImportDir + i), sizeof(std::int32_t) );
+
+								if ( num23 > 0 ) {
+									int num24 = CBinary::converterRelativeVirtualAddressToFileOffset( num23, inh->FileHeader.NumberOfSections, sections );
+
+									if ( num24 > 0 ) {
+										int num25 = 0;
+										CMemSafety::safeMemMove(&num25, &*(fileBytes + num24), sizeof(std::int32_t));
+
+										if ( num25 > 0 ) {
+											int num26 = CBinary::converterRelativeVirtualAddressToFileOffset( num25, inh->FileHeader.NumberOfSections, sections );
+
+											if ( num26 > 0 ) {
+												//SEGUNDA e TERCEIRA ASSINATURA para buscar a IAT
+												//RODAR CASO DE TESTE COM BINÁRIO
+
+											}
+										}
+
+									}
+								}
+
+
+							}
+
+							CMemSafety::memFlush( buff );
 
 						}
+
+
+
 
 
 					} catch ( std::exception &ex ) { }

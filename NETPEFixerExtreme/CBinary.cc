@@ -114,17 +114,11 @@ auto CBinary::gp( ) -> std::streamoff {
 /// <param name="relativeVirtualAddress">RVA de no máximo 4 bytes</param>
 /// <param name="ctx">Contexto de seção</param>
 /// <returns>O offset do arquivo</returns>
-auto CBinary::converterRelativeVirtualAddressToFileOffset( std::uint64_t superidolhash, void* ctx ) -> int {
+auto CBinary::converterRelativeVirtualAddressToFileOffset( std::uint64_t superidolhash, std::uint64_t NumberOfSections, void* ctx ) -> int {
 
 	auto* ctxs = reinterpret_cast< IMAGE_SECTION_HEADER* >( ctx );
-	int qtdSecoesPe = superidolhash & 0xFF; // Me da, então TOMA!
-	superidolhash = superidolhash >> 8; // Agora vai em bora e me da oque eu quero ? yeah!
-	// Matemáticamente falando:
-	// 0xDEADBEEF03  < isso chegou
-	// 0xDEADBEEF 03 -> & Me da, então TOMA!
-	// 0xDEADBEEF -> >> Agora vai em bora e me da oque eu quero ? yeah!
-	// Fonte: Meus Professores que me ensinaram fica mais fácil para guardar, hehe
-	for ( int i = 0; i < qtdSecoesPe; i++ )
+
+	for ( int i = 0; i < NumberOfSections; i++ )
 		if ( ctxs[ i ].VirtualAddress <= superidolhash && ctxs[ i ].VirtualAddress + ctxs[ i ].SizeOfRawData >= superidolhash )
 			return ctxs[ i ].PointerToRawData 
 				   + ( superidolhash - ctxs[ i ].VirtualAddress ); //Somatória da diferença entre o valor atual da superidolhash e o endereço virtual da seção

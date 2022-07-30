@@ -52,7 +52,7 @@ auto CMemSafety::memFlush( void* mem ) -> void {
 /// <param name="patternTwo">Ponteiro para segunda região a comparar</param>
 /// <param name="patternSize">Tamanho da região na qual deseja-se comparar</param>
 /// <returns></returns>
-auto compareMem( void* patternOne, void* patternTwo, std::size_t patternSize ) -> bool {
+auto CMemSafety::compareMem( void* patternOne, void* patternTwo, std::size_t patternSize ) -> bool {
 
 	return std::memcmp(
 

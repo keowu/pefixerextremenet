@@ -14,7 +14,7 @@ auto main( void ) -> int
 
     auto* binary = new CBinary(
 
-        "C:\\Users\\Joao\\Desktop\\Projetos\\Nova pasta (3)\\peparsernet\\PEFixerExtremeUI_dev.exe",
+        "C:\\Users\\Joao\\Desktop\\Projetos\\Nova pasta (3)\\peparsernet\\PEFixerExtremeUI - Copia.exe",
         std::ios::in
               |
         std::ios::binary

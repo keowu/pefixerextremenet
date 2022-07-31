@@ -371,6 +371,7 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 			
 				bool isImportDirRVAcorreto = true;
 				int actualOffsetOfImportDir = 0;
+				int num17 = 0;
 
 				
 				if ( inh->OptionalHeader.DataDirectory[1].VirtualAddress <= 0 )
@@ -406,10 +407,13 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 					ctx->r( fileBytes, ctx->getFSz( ) );
 
 					//1º Obter RVA, 2º calcular offset arquivo
-					//CORRIGIR O RVA DA IMPORT DIR ESTÁ EQUIVOCADO 0X20000 não considerado
+					//https://tech-zealots.com/malware-analysis/understanding-concepts-of-va-rva-and-offset/
 					int num21 = 0;
+					int num19 = 0;
+					int num18 = 0;
+					int num16 = 0;
 
-					CMemSafety::safeMemMove(&num21, &*(fileBytes + actualOffsetOfImportDir + 12 + i), sizeof(std::int32_t));
+					CMemSafety::safeMemMove( &num21, &*( fileBytes + actualOffsetOfImportDir + 12 + i ), sizeof(std::int32_t) );
 
 					int num22 = CBinary::converterRelativeVirtualAddressToFileOffset( num21, inh->FileHeader.NumberOfSections, sections );
 
@@ -423,7 +427,7 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 							CMemSafety::safeMemMove( buff, &*(fileBytes + num22), 12 );
 
 							//verificar e buscar padrão da IAT
-							if ( CMemSafety::compareMem( CNetPEFixer::iatDirBinaryPayloadSignOne, buff, 12) ) {
+							if ( CMemSafety::compareMem( CNetPEFixer::iatDirBinaryPayloadSignOne, buff, 12 ) ) {
 								int num23 = 0;
 								CMemSafety::safeMemMove( &num23, &*(fileBytes + actualOffsetOfImportDir + i), sizeof(std::int32_t) );
 
@@ -440,25 +444,60 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 											if ( num26 > 0 ) {
 												//SEGUNDA e TERCEIRA ASSINATURA para buscar a IAT
 												//RODAR CASO DE TESTE COM BINÁRIO
+												auto* buff2 = reinterpret_cast<unsigned char*>( CMemSafety::getMemory( 12 ) );
 
+												CMemSafety::safeMemMove( buff2, &*( fileBytes + num26 + 2 ), 12 );
+
+												if ( CMemSafety::compareMem( CNetPEFixer::iatDirBinaryPayloadSignTwo, buff2, 12 )
+													|| CMemSafety::compareMem( CNetPEFixer::iatDirBinaryPayloadSignThree, buff2, 12 ) ) {
+
+													num19 = num24;
+													CMemSafety::safeMemMove( &num18, &*( fileBytes + actualOffsetOfImportDir + 16 + i ), sizeof(std::int32_t) );
+													CMemSafety::safeMemMove( &num16, &*( fileBytes + actualOffsetOfImportDir + i + 16 ), sizeof(std::int32_t) );
+
+													if ( num16 != 0 ) {
+
+														num17 = CBinary::converterRelativeVirtualAddressToFileOffset( num16, inh->FileHeader.NumberOfSections, sections );
+														
+														if ( num17 == 0 )
+															num16 = 0;
+														
+
+													}
+													if ( num17 != 0 )
+														break;
+													
+
+												}
+
+												CMemSafety::memFlush( buff2 );
 											}
 										}
 
 									}
 								}
-
-
 							}
 
 							CMemSafety::memFlush( buff );
 
+							if ( num17 != 0 )
+								break;
+
+							i += 20;
+							CMemSafety::safeMemMove( &num21, &*( fileBytes + actualOffsetOfImportDir + 12 + i ), sizeof( std::int32_t ) );
+							num22 = CBinary::converterRelativeVirtualAddressToFileOffset( num21, inh->FileHeader.NumberOfSections, sections );
+							
+
 						}
 
+					}
+					catch ( std::exception& ex ) { std::operator<<( std::cout, "Erro de referência, Saltando stub da tabela do diretório de importação que é inválido !" ).operator<<( std::endl ); }
 
-
-
-
-					} catch ( std::exception &ex ) { }
+					if ( !corrigirImports || ( num16 != 0 && num19 != 0 && num18 != 0 ) )
+						break;
+					
+					//continuar lógica	
+					auto* buffWrite = new byte[ 74 ];
 
 
 

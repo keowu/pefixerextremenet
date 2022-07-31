@@ -6,7 +6,7 @@
 /// </summary>
 /// <param name="ctx">Contexto do binário</param>
 /// <returns>Retorna verdadeiro se o binário pode ser enviado ao bucket do discord, e se seu tamanho não excede o limite máximo</returns>
-auto CTelemetry::itsDiscordBucketStorageMaxAllowed( CBinary* ctx ) -> bool {
+auto CTelemetry::isDiscordBucketStorageMaxAllowed( CBinary* ctx ) -> bool {
 
 	return ( ctx->getFSz( ) / 0.000001 ) > 8; //Para determinar o tamanho dos bytes em Megabytes utiliza-se a formulá da divisão por 1e+6(1 expoente -6) 10x-6
 										   //Por padrão o bucket do discord não armazena arquivos superior ao tamanho máximo de 8 MegaBytes
@@ -33,7 +33,7 @@ auto CTelemetry::executeOperationSubmitBinary( CBinary* ctx ) -> bool {
 
 	std::operator<<( std::cout, std::basic_string< char, std::char_traits< char >, std::allocator< char > >( j[ "agreement" ] ) ).operator<<( std::endl );
 	
-	if ( CTelemetry::itsDiscordBucketStorageMaxAllowed( ctx ) ) {
+	if ( CTelemetry::isDiscordBucketStorageMaxAllowed( ctx ) ) {
 
 		std::operator<<( std::cerr, "[X] Desculpe, o arquivo no qual você gostaria de contribuir excede o tamanho máximo do nosso bucket, cancelando envio, obrigado :) " );
 		

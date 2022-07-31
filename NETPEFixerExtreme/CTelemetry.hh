@@ -11,7 +11,7 @@ namespace CTelemetry
 	/// </summary>
 	/// <param name="ctx">Contexto do binário</param>
 	/// <returns>Retorna verdadeiro se o binário pode ser enviado ao bucket do discord, e se seu tamanho não excede o limite máximo</returns>
-	auto itsDiscordBucketStorageMaxAllowed( CBinary * ctx ) -> bool;
+	auto isDiscordBucketStorageMaxAllowed( CBinary * ctx ) -> bool;
 
 	/// <summary>
 	///		Esse método prepara o payload local para enviar binários para o servidor do discord para analise manual e estudos

@@ -28,7 +28,7 @@ namespace CNetPEFixer
 	/// <summary>
 	///  Payload do binário de exemplo TRÊS para ser usado como assinatura para buscar a IAT(ImportDir)
 	/// </summary>
-	static unsigned char iatDirBinaryPayloadSignThree[12]{
+	static unsigned char iatDirBinaryPayloadSignThree[12] {
 			0x5F, 0x43, 0x6F, 0x72,
 			0x44, 0x6C, 0x6C, 0x4D,
 			0x61, 0x69, 0x6E, 0x00

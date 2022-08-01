@@ -6,7 +6,7 @@
 /// <param name="ctx">Contexto do binário</param>
 auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 	
-	bool corrigirDiretorioMetadata = true, corrigirBSJB = true, corrigirNumerosDosRVAseTamanhos = true, corrigirDiretorioNet = true, corrigirImports = true; // EM DESENVOLVIMENTO OBVIAMENTE MUITO MAIS OPÇÕES VÃO ESTAR DISPONÍVEIS
+	bool corrigirDiretorioMetadata = true, corrigirBSJB = true, corrigirNumerosDosRVAseTamanhos = true, corrigirDiretorioNet = true, corrigirImports = true, corrigirRealocacoes = true; // EM DESENVOLVIMENTO OBVIAMENTE MUITO MAIS OPÇÕES VÃO ESTAR DISPONÍVEIS
 
 	std::operator<<( std::operator<<( std::cout, "Corrigindo arquivo PE Net -> " ), ctx->getFilePath( ) ).operator<<( std::endl );
 
@@ -397,6 +397,11 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 						std::operator<<( std::cout, "Desculpe, o seu RVA para o diretório de importação está equivocado, tente conseguir corrigir ou determinar um novo RVA para que eu possa corrigir suas importações ! " ).operator<<( std::endl );
 					} );
 				
+
+				int num19 = 0;
+				int num18 = 0;
+				int num16 = 0;
+				int num13 = 0;
 				
 				for ( ;; ) {
 
@@ -409,9 +414,6 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 					//1º Obter RVA, 2º calcular offset arquivo
 					//https://tech-zealots.com/malware-analysis/understanding-concepts-of-va-rva-and-offset/
 					int num21 = 0;
-					int num19 = 0;
-					int num18 = 0;
-					int num16 = 0;
 
 					CMemSafety::safeMemMove( &num21, &*( fileBytes + actualOffsetOfImportDir + 12 + i ), sizeof(std::int32_t) );
 
@@ -496,16 +498,84 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 					if ( !corrigirImports || ( num16 != 0 && num19 != 0 && num18 != 0 ) )
 						break;
 					
-					//continuar lógica	
 					auto* buffWrite = new byte[ 74 ];
 
+					std::int32_t iatrvafixFirst = inh->OptionalHeader.DataDirectory[1].VirtualAddress + 40;
+					CMemSafety::safeMemMove( &*(buffWrite + 0), &iatrvafixFirst, sizeof(std::int32_t) );
 
+					std::int32_t iatrvafixTwo = inh->OptionalHeader.DataDirectory[1].VirtualAddress + 62;
+					CMemSafety::safeMemMove( &*(buffWrite + 12), &iatrvafixTwo, sizeof(std::int32_t) );
+
+					std::int32_t iatrvafixConst = NT_PE_NET_THEMIDA_RVA_FOR_METADATA_DIR;
+					CMemSafety::safeMemMove( &*(buffWrite + 12 + sizeof(int32_t)), &iatrvafixConst, sizeof(std::int32_t) );
+
+					std::int32_t iatrvaThree = inh->OptionalHeader.DataDirectory[1].VirtualAddress + 48;
+					CMemSafety::safeMemMove( &*(buffWrite + 40), &iatrvaThree, sizeof(std::int32_t) );
+
+					CMemSafety::safeMemMove( &*(buffWrite + 50), &iatDirBinaryPayloadSignTwo, 12 );
+					CMemSafety::safeMemMove( &*(buffWrite + 62), &iatDirBinaryPayloadSignOne, 12 );
+
+					CMemSafety::safeMemMove( &*(fileBytes + actualOffsetOfImportDir), &buffWrite, 74 );
 
 					ctx->mp( 0x00 );
 					ctx->w( fileBytes, ctx->getFSz( ) );
 					CMemSafety::memFlush( fileBytes );
+					corrigirImports = false;
+					std::operator<<( std::cout, "Toda a tabela de importação IAT foi corrigida!" ).operator<<( std::endl );
 				}
 
+				if ( num16 != 0 || ( num19 != 0 && num18 != 0 ) ) {
+
+					ctx->mp( 0x00 );
+					auto* fileBytes = CMemSafety::getMemory( ctx->getFSz( ) );
+					ctx->r( fileBytes, ctx->getFSz( ) );
+
+					if ( corrigirRealocacoes ) {
+
+						bool flag7 = true;
+
+						if ( inh->OptionalHeader.AddressOfEntryPoint <= 0 )
+							flag7 = false;
+						
+						else {
+
+							num13 = CBinary::converterRelativeVirtualAddressToFileOffset( inh->OptionalHeader.AddressOfEntryPoint, inh->FileHeader.NumberOfSections, sections );
+							
+							if ( num13 == 0 )
+								flag7 = false;
+							
+							if ( CBinary::converterRelativeVirtualAddressToFileOffset( inh->OptionalHeader.AddressOfEntryPoint + 5, inh->FileHeader.NumberOfSections, sections ) == 0 )
+								flag7 = false;
+
+						}
+
+						if ( !flag7 && num16 != 0 ) {
+
+							int imagebaseNew = num16 + inh->OptionalHeader.ImageBase;
+
+							auto arrayRel = new byte[ 6 ];
+							arrayRel[0] = 0xFF;
+							arrayRel[1] = 0x25;
+
+							CMemSafety::safeMemMove( &*(arrayRel + 2), &imagebaseNew, sizeof(std::int32_t) );
+							int num27 = 0;
+
+							//1º
+
+						}
+
+
+						//2º
+
+
+
+					}
+
+					ctx->mp( 0x00 );
+					ctx->w( fileBytes, ctx->getFSz( ) );
+					CMemSafety::memFlush( fileBytes );
+
+				}
 
 
 				//APLICAR AQUI AS LÓGICAS PARA AS PRÓXIMAS CORREÇÕES !

@@ -288,11 +288,7 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 							.operator<<( std::endl );
 
 						//Gravando valor recalculado do tamanho de metadata
-						CMemSafety::safeMemMove( &sizePredicted, &*( binaryBytesRaw + CBinary::converterRelativeVirtualAddressToFileOffset(inh->OptionalHeader.DataDirectory[14].VirtualAddress, inh->FileHeader.NumberOfSections, sections ) + 8 + 4 ), sizeof( int ) );
-
-						ctx->mp( CBinary::converterRelativeVirtualAddressToFileOffset( inh->OptionalHeader.DataDirectory[14].VirtualAddress, inh->FileHeader.NumberOfSections, sections ) + 8 + 4 );
-
-						ctx->w( &sizePredicted, sizeof(int) );
+						CMemSafety::safeMemMove(&*(binaryBytesRaw + CBinary::converterRelativeVirtualAddressToFileOffset(inh->OptionalHeader.DataDirectory[14].VirtualAddress, inh->FileHeader.NumberOfSections, sections) + 8 + 4), &sizePredicted, sizeof(int));
 
 					}
 
@@ -560,12 +556,52 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 							CMemSafety::safeMemMove( &*(arrayRel + 2), &imagebaseNew, sizeof(std::int32_t) );
 							int num27 = 0;
 
-							//1º
+							for (auto i = actualOffsetOfImportDir; i < ctx->getFSz(); i++) {
 
+								bool flag8 = true;
+
+								for (auto j = 0; i < 6; j++) {
+									if (fileBytes[i + j] != arrayRel[j])
+									{
+										flag8 = false;
+										break;
+									}
+								}
+
+								if (flag8) {
+									num27 = i;
+									break;
+								}
+
+							}
+							if (num27 != 0) {
+								int num28 = CBinary::converterRelativeVirtualAddressToFileOffset(num27, inh->FileHeader.NumberOfSections, sections);
+								if (num28 != 0) {
+									
+									CMemSafety::safeMemMove(&*(fileBytes + idh->e_lfanew + 40), &num28, sizeof(int));
+
+									std::operator<<(std::cout, "O Entrypoint foi definido para ").operator<<(std::hex).operator<<(num28).operator<<(std::endl);
+								}
+							}
+						}
+						if (num19 != 0 && num18 != 0) {
+
+							auto array7 = new byte[4];
+							CMemSafety::safeMemMove(&array7, &*(fileBytes + num19), 4);
+							auto array9 = new byte[4];
+							int num29 = CBinary::converterRelativeVirtualAddressToFileOffset(num18, inh->FileHeader.NumberOfSections, sections);
+							CMemSafety::safeMemMove(&array9, &*(fileBytes + num29), 4);
+
+							//Rodar caso de teste nesse trecho
+							if (!CMemSafety::compareMem(array9, array7, 4)) {
+								CMemSafety::safeMemMove(&*(fileBytes + num29), &array7, 4);
+								std::operator<<(std::cout, "Corrigindo Fts IAT").operator<<(std::endl);
+
+							}
 						}
 
-
 						//2º
+
 
 
 

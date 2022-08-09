@@ -128,6 +128,21 @@ auto CBinary::converterRelativeVirtualAddressToFileOffset( std::uint64_t superid
 }
 
 /// <summary>
+///		EXECUTAR CASO DE TESTE NA LÓGICA !
+/// </summary>
+auto CBinary::reconstruirRelocacoesNet(int relativeVirtualAddress) -> byte* {
+
+	byte* arraya = new byte[12];
+	int valor = static_cast<int>(static_cast<long>(relativeVirtualAddress) & static_cast<long>(static_cast<unsigned long>(-4096)));
+	CMemSafety::safeMemMove((void *)arraya, (void *)valor, 4);
+	for (auto i = 0; i < 4; i++)
+		std::printf("%X ", *(arraya + i));
+	int valor2 = 12;
+
+	return nullptr; // RETORNAR PONTEIRO DE RELOCAÇÕES
+}
+
+/// <summary>
 ///		Esse método fecha o contexto aberto do binário no qual está se trabalhando
 /// </summary>
 CBinary::~CBinary( ) {

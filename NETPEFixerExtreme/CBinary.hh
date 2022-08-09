@@ -3,6 +3,7 @@
 #include <fstream>
 #include <Windows.h>
 #include <filesystem>
+#include "CMemSafety.hh"
 #include "The3rd/json.hpp"
 
 enum CBinaryType {
@@ -115,6 +116,15 @@ public:
 		std::uint64_t superidolhash, 
 		std::uint64_t NumberOfSections,
 		void* ctx
+	);
+
+	/// <summary>
+	///		Esse método vai reconstruir todas as relocações do binário com base em um RVA
+	/// </summary>
+	/// <param name="relativeVirtualAddress">RVA</param>
+	/// <returns>Conjunto de bytes da relocação</returns>
+	static byte* reconstruirRelocacoesNet(
+		int relativeVirtualAddress
 	);
 
 	/// <summary>

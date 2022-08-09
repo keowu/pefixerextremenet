@@ -366,6 +366,8 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 
 			
 				bool isImportDirRVAcorreto = true;
+				bool flag5 = true;
+				int num15 = 0;
 				int actualOffsetOfImportDir = 0;
 				int num17 = 0;
 
@@ -599,11 +601,41 @@ auto CNetPEFixer::fixNetPE( CBinary* ctx ) -> void {
 
 							}
 						}
+						/*
+						* Usar caso de teste !
+						* 
+						if (flag7 && num16 != 0) {
+							if (fileBytes[num13] != 0xFF || fileBytes[num13 + 1] != 37) {
+								fileBytes[num13] = 0xFF;
+								fileBytes[num13 + 1] = 37;
+								std::operator<<(std::cout, "Definido os primeiros 2 bytes do entrypoint para 0xFF25").operator<<(std::endl);
+							}
+							int valor = num16 + inh->OptionalHeader.ImageBase;
+							byte *array10 = new byte[4];
+							CMemSafety::safeMemMove((void *)array10, &* (fileBytes + num13 + 2), 4);
+							if (!CMemSafety::compareMem((void *)valor, (void *)array10, 4)) {
+								CMemSafety::safeMemMove(&*(fileBytes + num13 + 2), &valor, 4);
+								std::operator<<(std::cout, "O jump presente no entrypoint do loader .net foi corrrigido para ").operator<<(std::hex).operator<<(valor).operator<<(std::endl);
+							}
+						}*/
+						
+						if (inh->OptionalHeader.DataDirectory[5].VirtualAddress <= 0)
+							flag5 = false;
+						else {
+							num15 = CBinary::converterRelativeVirtualAddressToFileOffset(inh->OptionalHeader.DataDirectory[5].VirtualAddress, inh->FileHeader.NumberOfSections, sections);
+							if (actualOffsetOfImportDir == 0)
+								flag5 = false;
+							if (CBinary::converterRelativeVirtualAddressToFileOffset(inh->OptionalHeader.DataDirectory[5].VirtualAddress + 11, inh->FileHeader.NumberOfSections, sections) == 0)
+								flag5 = false;
+						}
+
+						//RODAR TESTE DE CASO COM BINÁRIOS DEMO:
+						if (flag5 && num16 != 0) {
+							//lógica build net reloc
+							byte* array11 = CBinary::reconstruirRelocacoesNet(inh->OptionalHeader.AddressOfEntryPoint + 2);
+						}
 
 						//2º
-
-
-
 
 					}
 
